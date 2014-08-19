@@ -1,16 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Arkanos Language Learner</string>
+    <string name="app_name">Arkanos Vocabulary Builder</string>
+    <string name="app_version">v0.0.3</string>
     
     <!-- About Screen -->
     <string name="about_tab">About</string>
     <string name="copyright_external">
-        <p style="font-size:0.5em">Copyright</p>
+        <![CDATA[
+			<p>
+				Copyright
+			</p>
+        ]]>
     </string>
     <string name="copyright">
-        <p>Arkanos Vocabulary Builder<br/>
-        Copyright (C) 2014 Matheus Borges Teixeira</p>
+        <![CDATA[
+	        <p>
+	        	Arkanos Vocabulary Builder<br/>
+	        	Copyright (C) 2014<br/> 
+	        	Matheus Borges Teixeira
+	        </p>
+        ]]>
     </string>
     
     <string name="title_section2">Section 2</string>

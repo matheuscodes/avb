@@ -2,7 +2,17 @@
 <resources>
 
     <string name="app_name">Arkanos Language Learner</string>
-    <string name="title_section1">Section 1</string>
+    
+    <!-- About Screen -->
+    <string name="about_tab">About</string>
+    <string name="copyright_external">
+        <p style="font-size:0.5em">Copyright</p>
+    </string>
+    <string name="copyright">
+        <p>Arkanos Vocabulary Builder<br/>
+        Copyright (C) 2014 Matheus Borges Teixeira</p>
+    </string>
+    
     <string name="title_section2">Section 2</string>
     <string name="title_section3">Section 3</string>
     <string name="action_settings">Settings</string>

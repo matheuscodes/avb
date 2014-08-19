@@ -1,6 +1,6 @@
 package org.arkanos.avb.fragments;
 
-import org.arkanos.all.R;
+import org.arkanos.avb.R;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

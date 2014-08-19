@@ -2,7 +2,7 @@ package org.arkanos.avb.fragments;
 
 import java.util.Locale;
 
-import org.arkanos.all.R;
+import org.arkanos.avb.R;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;

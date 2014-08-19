@@ -1,6 +1,6 @@
 package org.arkanos.avb.views;
 
-import org.arkanos.all.R;
+import org.arkanos.avb.R;
 import org.arkanos.avb.fragments.SectionsPagerAdapter;
 
 import android.os.Bundle;

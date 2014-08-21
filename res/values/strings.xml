@@ -3,13 +3,19 @@
 
     <string name="app_name">Arkanos Vocabulary Builder</string>
     <string name="app_version">v0.0.3</string>
+    
+    <!-- Too Generic -->
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
     <!-- About Screen -->
     <string name="about_tab">About</string>
     <string name="copyright_external">
 		<![CDATA[
 			<p>
-				Copyright
+				WordNet 3.0<br/>
+				Copyright (C) 2006<br/>
+				Princeton University
 			</p>
         ]]>
     </string>
@@ -28,10 +34,12 @@
     
     <!-- Loading Dictionary strings -->
 	<string name="load_dict">Loading Dictionary</string>
+	<string name="load_dict_missing">Missing Dictionary</string>
+	<string name="load_dict_confirm">The dictionary needs to be loaded. This is required only once and might take a couple minutes.\nDo you wish to proceed?</string>
 	<string name="load_dict_start">Loading will commence shortly</string>
-	<string name="load_dict_adv">Reading adverbs&#8230;</string>
-	<string name="load_dict_verb">Reading verbs&#8230;</string>
-	<string name="load_dict_adj">Reading adjectives&#8230;</string>
-	<string name="load_dict_noun">Reading nouns&#8230;</string>
+	<string name="load_dict_adv">Reading adverbs&#8230;{count} senses left.</string>
+	<string name="load_dict_verb">Reading verbs&#8230;{count} senses left.</string>
+	<string name="load_dict_adj">Reading adjectives&#8230;{count} senses left.</string>
+	<string name="load_dict_noun">Reading nouns&#8230;{count} senses left.</string>
 
 </resources>

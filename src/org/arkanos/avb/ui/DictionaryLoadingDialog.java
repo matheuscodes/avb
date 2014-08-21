@@ -37,6 +37,11 @@ public class DictionaryLoadingDialog extends ProgressDialog implements
 	}
 
 	@Override
+	public void startIt() {
+		this.show();
+	}
+
+	@Override
 	public void finishIt() {
 		this.dismiss();
 	}

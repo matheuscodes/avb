@@ -9,6 +9,9 @@ import org.arkanos.avb.R;
 import org.arkanos.avb.interfaces.ProgressObserver;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -22,9 +25,11 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 	public static final int WN_ADVERBS = 3621;
 
 	private static final int BATCH = 100;
+	private static final long SKIP = 1740;
 
 	private ProgressObserver progress_observer = null;
 	private Activity parent = null;
+	private Dictionary destination = null;
 
 	@Override
 	protected Void doInBackground(Void... v) {
@@ -40,9 +45,9 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 	}
 
 	@Override
-	protected void onPostExecute(Void v)
-	{
+	protected void onPostExecute(Void v) {
 		progress_observer.finishIt();
+		Log.d("AVB-Wordnet", "Dictionary has now " + destination.getSize() + " words.");
 	}
 
 	private void loadFile(int size, int file, int message) {
@@ -52,12 +57,15 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 			InputStream in = parent.getResources().openRawResource(file);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 			String s;
+			reader.skip(Wordnet.SKIP);
 			s = reader.readLine();
 			while (s != null) {
 				int count = 0;
-				progress_observer.replaceMessage(parent.getString(message).replace("{count}", "" + total));
+				progress_observer.replaceMessage(parent.getString(message).replace("{count}", "\n" + total));
 				while (s != null && count++ < BATCH) {
-					// Log.d("AVB-Wordnet", s);
+					ContentValues data = new ContentValues();
+					readSense(s, data);
+					destination.addSense(data);
 					s = reader.readLine();
 				}
 				progress_observer.increaseBy(BATCH);
@@ -70,19 +78,112 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 	}
 
 	public Wordnet(Dictionary d, ProgressObserver po, Activity who) {
+		progress_observer = po;
+		parent = who;
+		destination = d;
 		if (d.getSize() < WN_TOTAL) {
-			progress_observer = po;
-			parent = who;
-			this.execute();
-			Log.d("AVB-Wordnet", "Loading started.");
+			AlertDialog.Builder ad = new AlertDialog.Builder(parent);
+			ad.setTitle(R.string.load_dict_missing);
+			ad.setMessage(parent.getString(R.string.load_dict_confirm));
+			ad.setCancelable(false);
+			ad.setNegativeButton(parent.getString(R.string.no), new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					progress_observer.finishIt();
+					parent.finish();
+					Log.d("AVB-Wordnet", "Loading cancelled.");
+				}
+			});
+			ad.setPositiveButton(parent.getString(R.string.yes), new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					progress_observer.startIt();
+					execute();
+					Log.d("AVB-Wordnet", "Loading started.");
+				}
+			});
+			ad.show();
 		}
 		else {
 			Log.d("AVB-Wordnet", "Dictionary is already full.");
 		}
 	}
 
-	public static void readAdverb(String from) {
+	private static void readSense(String from, ContentValues to) {
+		// Log.d("AVB-Wordnet", from);
+		String processed = from;
+		int priority = 0;
+		// String debug = "";
+		String glossary = from.substring(from.indexOf('|') + 1);
 
+		String synset_offset = processed.substring(0, processed.indexOf(' '));
+		processed = processed.substring(processed.indexOf(' ') + 1); // next
+		// debug += "<" + synset_offset + ">";
+
+		processed = processed.substring(processed.indexOf(' ') + 1); // skip
+																		// lex_filenum
+
+		String ss_type = processed.substring(0, processed.indexOf(' '));
+		processed = processed.substring(processed.indexOf(' ') + 1); // next
+		// debug += "<" + ss_type + ">";
+
+		String w_cnt = processed.substring(0, processed.indexOf(' '));
+		processed = processed.substring(processed.indexOf(' ') + 1); // next
+		// debug += "<" + w_cnt + ">";
+
+		String synonyms = null;
+		int count = Integer.valueOf(w_cnt, 16);
+		priority += count;
+		for (int i = 0; i < count; ++i) {
+			String word = processed.substring(0, processed.indexOf(' '));
+			if (synonyms != null) {
+				synonyms += " " + word;
+			}
+			else {
+				synonyms = word;
+			}
+			processed = processed.substring(processed.indexOf(' ') + 1); // next
+			processed = processed.substring(processed.indexOf(' ') + 1); // skip
+																			// lex_id
+		}
+		// debug += "<" + synonyms + ">";
+		to.put(Sense.Fields.SENSE.toString(), ss_type + synset_offset);
+		to.put(Sense.Fields.GLOSSARY.toString(), glossary);
+		to.put(Sense.Fields.SYNONYMS.toString(), synonyms);
+		to.put(Sense.Fields.GRAMMAR_CLASS.toString(), ss_type + synset_offset);
+		priority += readAntonyms(processed, to);
+		to.put(Sense.Fields.PRIORITY.toString(), priority);
+		// Log.d("AVB-Wordnet", debug + " " + glossary);
+	}
+
+	private static int readAntonyms(String from, ContentValues to) {
+		String processed = from;
+		int priority = 0;
+		String p_cnt = processed.substring(0, processed.indexOf(' '));
+		processed = processed.substring(processed.indexOf(' ') + 1); // next
+
+		String antonyms = null;
+		int count = Integer.valueOf(p_cnt);
+		priority += count;
+		for (int i = 0; i < count; ++i) {
+			String pointer_symbol = processed.substring(0, processed.indexOf(' '));
+			processed = processed.substring(processed.indexOf(' ') + 1); // next
+			String p_synset_offset = processed.substring(0, processed.indexOf(' '));
+			processed = processed.substring(processed.indexOf(' ') + 1); // next
+			String pos = processed.substring(0, processed.indexOf(' '));
+			processed = processed.substring(processed.indexOf(' ') + 1); // next
+			processed = processed.substring(processed.indexOf(' ') + 1); // skip
+																			// source/target
+			if (pointer_symbol.compareTo("!") == 0) {
+
+				if (antonyms != null) {
+					antonyms += " " + pos + p_synset_offset;
+				}
+				else {
+					antonyms = pos + p_synset_offset;
+				}
+			}
+		}
+		to.put(Sense.Fields.ANTONYMS.toString(), antonyms);
+		return priority;
 	}
 
 }

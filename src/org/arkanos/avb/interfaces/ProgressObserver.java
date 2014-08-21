@@ -14,4 +14,6 @@ public interface ProgressObserver {
 
 	public void finishIt();
 
+	public void startIt();
+
 }

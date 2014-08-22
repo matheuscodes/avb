@@ -1,4 +1,4 @@
-package org.arkanos.avb.views;
+package org.arkanos.avb.activities;
 
 import org.arkanos.avb.R;
 import org.arkanos.avb.data.DatabaseHelper;

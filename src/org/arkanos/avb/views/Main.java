@@ -4,34 +4,23 @@ import org.arkanos.avb.R;
 import org.arkanos.avb.data.DatabaseHelper;
 import org.arkanos.avb.data.Dictionary;
 import org.arkanos.avb.data.Wordnet;
-import org.arkanos.avb.fragments.SectionsPagerAdapter;
+import org.arkanos.avb.fragments.About;
 import org.arkanos.avb.ui.DictionaryLoadingDialog;
 
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
 
-public class Main extends ActionBarActivity implements ActionBar.TabListener {
-
-	/**
-	 * The {@link android.support.v4.view.PagerAdapter} that will provide
-	 * fragments for each of the sections. We use a {@link FragmentPagerAdapter}
-	 * derivative, which will keep every loaded fragment in memory. If this
-	 * becomes too memory intensive, it may be best to switch to a
-	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-	 */
-	SectionsPagerAdapter mSectionsPagerAdapter;
-
-	/**
-	 * The {@link ViewPager} that will host the section contents.
-	 */
-	ViewPager mViewPager;
+public class Main extends Activity implements ActionBar.TabListener {
 
 	private static Wordnet wordnet = null;
+
+	Fragment[] tabs = null;
 
 	private static synchronized Wordnet makeWordnet(Activity context) {
 		if (Main.wordnet == null) {
@@ -51,64 +40,69 @@ public class Main extends ActionBarActivity implements ActionBar.TabListener {
 		setContentView(R.layout.activity_main);
 
 		// Set up the action bar.
-		final ActionBar actionBar = getSupportActionBar();
+
+		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-		// Create the adapter that will return a fragment for each of the
-		// three
-		// primary sections of the activity.
-		mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), Main.this);
+		tabs = new Fragment[1];
 
-		// Set up the ViewPager with the sections adapter.
-		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mSectionsPagerAdapter);
+		/** Begin **/
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
 
-		// When swiping between different sections, select the corresponding
-		// tab. We can also use ActionBar.Tab#select() to do this if we have
-		// a reference to the Tab.
-		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-			@Override
-			public void onPageSelected(
-					int position) {
+		Fragment helper = new About();
+		ft.add(android.R.id.content, helper, "about");
+		ft.detach(helper);
+		tabs[0] = helper;
+		actionBar.addTab(
 				actionBar
-						.setSelectedNavigationItem(position);
-			}
-		});
+						.newTab()
+						.setText(R.string.about_tab)
+						.setTabListener(this));
 
-		// For each of the sections in the app, add a tab to the action bar.
-		for (int i = 0; i < mSectionsPagerAdapter
-				.getCount(); i++) {
-			// Create a tab with text corresponding to the page title
-			// defined by
-			// the adapter. Also specify this Activity object, which
-			// implements
-			// the TabListener interface, as the callback (listener) for
-			// when
-			// this tab is selected.
-			actionBar.addTab(actionBar.newTab().setText(mSectionsPagerAdapter.getPageTitle(i)).setTabListener(Main.this));
+		ft.commit();
+		/** End **/
+
+		if (savedInstanceState != null) {
+			actionBar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+		}
+		else {
+			actionBar.setSelectedNavigationItem(0);
 		}
 	}
 
 	@Override
-	public void onTabSelected(
-			ActionBar.Tab tab,
-			FragmentTransaction fragmentTransaction) {
-		// When the given tab is selected, switch to the corresponding page in
-		// the ViewPager.
-		mViewPager
-				.setCurrentItem(tab
-						.getPosition());
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt("tab", getActionBar().getSelectedNavigationIndex());
 	}
 
 	@Override
-	public void onTabUnselected(
-			ActionBar.Tab tab,
-			FragmentTransaction fragmentTransaction) {
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the options menu from XML
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.search, menu);
+
+		return true;
 	}
 
 	@Override
-	public void onTabReselected(
-			ActionBar.Tab tab,
-			FragmentTransaction fragmentTransaction) {
+	public void onTabReselected(Tab t, FragmentTransaction ft) {
+		/** Do nothing **/
+	}
+
+	@Override
+	public void onTabSelected(Tab t, FragmentTransaction ft) {
+		if (tabs != null && t != null && tabs[t.getPosition()] != null) {
+			if (ft != null)
+				ft.attach(tabs[t.getPosition()]);
+		}
+	}
+
+	@Override
+	public void onTabUnselected(Tab t, FragmentTransaction ft) {
+		if (tabs != null && t != null && tabs[t.getPosition()] != null) {
+			if (ft != null)
+				ft.detach(tabs[t.getPosition()]);
+		}
 	}
 }

@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">Arkanos Vocabulary Builder</string>
+    <string name="app_name_short">Vocabulary Builder</string>
     <string name="app_version">v0.0.3</string>
     
     <!-- Too Generic -->
@@ -28,9 +29,15 @@
 	        </p>
         ]]>
     </string>
+    
+    <!-- Search Screen -->
+    <string name="search_tab">Search</string>
+    
     <string name="title_section2">Section 2</string>
     <string name="title_section3">Section 3</string>
     <string name="action_settings">Settings</string>
+    
+    
     
     <!-- Loading Dictionary strings -->
 	<string name="load_dict">Loading Dictionary</string>
@@ -41,5 +48,9 @@
 	<string name="load_dict_verb">Reading verbs&#8230;{count} senses left.</string>
 	<string name="load_dict_adj">Reading adjectives&#8230;{count} senses left.</string>
 	<string name="load_dict_noun">Reading nouns&#8230;{count} senses left.</string>
+	
+	<!-- Searching Dictionary strings -->
+	<string name="dict_search">Search Dictionary</string>
+	<string name="dict_placeholder">Search for a word</string>
 
 </resources>

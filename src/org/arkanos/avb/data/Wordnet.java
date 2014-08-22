@@ -27,9 +27,8 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 	private static final int BATCH = 100;
 	private static final long SKIP = 1740;
 
-	private ProgressObserver progress_observer = null;
-	private Activity parent = null;
-	private Dictionary destination = null;
+	private static ProgressObserver progress_observer = null;
+	private static Activity parent = null;
 
 	@Override
 	protected Void doInBackground(Void... v) {
@@ -47,7 +46,7 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 	@Override
 	protected void onPostExecute(Void v) {
 		progress_observer.finishIt();
-		Log.d("AVB-Wordnet", "Dictionary has now " + destination.getSize() + " words.");
+		Log.d("AVB-Wordnet", "Dictionary has now " + Dictionary.getSize() + " words.");
 	}
 
 	private void loadFile(int size, int file, int message) {
@@ -65,7 +64,7 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 				while (s != null && count++ < BATCH) {
 					ContentValues data = new ContentValues();
 					readSense(s, data);
-					destination.addSense(data);
+					Dictionary.addSense(data);
 					s = reader.readLine();
 				}
 				progress_observer.increaseBy(BATCH);
@@ -77,11 +76,10 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 		}
 	}
 
-	public Wordnet(Dictionary d, ProgressObserver po, Activity who) {
+	public Wordnet(ProgressObserver po, Activity who) {
 		progress_observer = po;
 		parent = who;
-		destination = d;
-		if (d.getSize() < WN_TOTAL) {
+		if (Dictionary.getSize() < WN_TOTAL) {
 			AlertDialog.Builder ad = new AlertDialog.Builder(parent);
 			ad.setTitle(R.string.load_dict_missing);
 			ad.setMessage(parent.getString(R.string.load_dict_confirm));

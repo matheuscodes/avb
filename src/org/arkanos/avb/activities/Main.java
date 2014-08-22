@@ -1,44 +1,30 @@
 package org.arkanos.avb.activities;
 
 import org.arkanos.avb.R;
-import org.arkanos.avb.data.DatabaseHelper;
 import org.arkanos.avb.data.Dictionary;
 import org.arkanos.avb.data.Wordnet;
 import org.arkanos.avb.fragments.About;
-import org.arkanos.avb.ui.DictionaryLoadingDialog;
+import org.arkanos.avb.ui.SearchBoxHelper;
 
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.app.SearchManager;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuInflater;
-import android.widget.SearchView;
 
 public class Main extends Activity implements ActionBar.TabListener {
 
-	private static Wordnet wordnet = null;
-
 	Fragment[] tabs = null;
 
-	private static synchronized Wordnet makeWordnet(Activity context) {
-		if (Main.wordnet == null) {
-			DictionaryLoadingDialog progressDialog = new DictionaryLoadingDialog(context);
-			Dictionary d = new Dictionary(new DatabaseHelper(context));
-			Main.wordnet = new Wordnet(d, progressDialog, context);
-		}
-		return wordnet;
-	}
+	Wordnet reference = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		makeWordnet(this);
+		reference = Dictionary.loadWordnet(this);
 
 		setContentView(R.layout.activity_main);
 
@@ -82,17 +68,7 @@ public class Main extends Activity implements ActionBar.TabListener {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the options menu from XML
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.search, menu);
-
-		// Associate searchable configuration with the SearchView
-		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-		SearchView searchView = (SearchView) menu.findItem(R.id.search_box).getActionView();
-		searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-
-		searchView.setIconified(false);
-
+		SearchBoxHelper.activateBox(this, menu);
 		return true;
 	}
 

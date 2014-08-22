@@ -55,7 +55,7 @@ public class Dictionary {
 		try {
 			Cursor c = db_read.rawQuery("SELECT * FROM " + Sense.TABLE
 					+ " WHERE " + Sense.Fields.SYNONYMS
-					+ " LIKE '%" + match + "%'", null);
+					+ " LIKE '%" + match + "%' ORDER BY " + Sense.Fields.PRIORITY + " DESC;", null);
 			if (c.moveToFirst()) {
 				do {
 					Sense newone = new Sense(c);

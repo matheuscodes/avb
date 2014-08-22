@@ -52,5 +52,7 @@
 	<!-- Searching Dictionary strings -->
 	<string name="dict_search">Search Dictionary</string>
 	<string name="dict_placeholder">Search for a word</string>
+	<string name="dict_none">No results found!</string>
+	<string name="dict_synonyms">synonyms</string>
 
 </resources>

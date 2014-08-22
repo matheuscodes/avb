@@ -143,6 +143,8 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 																			// lex_id
 		}
 		// debug += "<" + synonyms + ">";
+		// TODO test fix
+		// TODO review priority (too high)
 		to.put(Sense.Fields.SENSE.toString(), ss_type + synset_offset);
 		to.put(Sense.Fields.GLOSSARY.toString(), glossary.trim());
 		to.put(Sense.Fields.SYNONYMS.toString(), synonyms);

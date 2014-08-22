@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="org.arkanos.avb.activities.Main" >
+    
+    <item android:id="@+id/search_box"
+          android:title="@string/dict_search"
+          android:showAsAction="always"
+          android:actionViewClass="android.widget.SearchView" />
+</menu>

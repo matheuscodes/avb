@@ -12,9 +12,12 @@ import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.SearchManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.widget.SearchView;
 
 public class Main extends Activity implements ActionBar.TabListener {
 
@@ -59,15 +62,16 @@ public class Main extends Activity implements ActionBar.TabListener {
 						.setText(R.string.about_tab)
 						.setTabListener(this));
 
-		ft.commit();
-		/** End **/
-
 		if (savedInstanceState != null) {
 			actionBar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
 		}
 		else {
 			actionBar.setSelectedNavigationItem(0);
+			ft.attach(tabs[0]);
 		}
+
+		ft.commit();
+		/** End **/
 	}
 
 	@Override
@@ -81,6 +85,13 @@ public class Main extends Activity implements ActionBar.TabListener {
 		// Inflate the options menu from XML
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.search, menu);
+
+		// Associate searchable configuration with the SearchView
+		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+		SearchView searchView = (SearchView) menu.findItem(R.id.search_box).getActionView();
+		searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+		searchView.setIconified(false);
 
 		return true;
 	}

@@ -144,9 +144,9 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 		}
 		// debug += "<" + synonyms + ">";
 		to.put(Sense.Fields.SENSE.toString(), ss_type + synset_offset);
-		to.put(Sense.Fields.GLOSSARY.toString(), glossary);
+		to.put(Sense.Fields.GLOSSARY.toString(), glossary.trim());
 		to.put(Sense.Fields.SYNONYMS.toString(), synonyms);
-		to.put(Sense.Fields.GRAMMAR_CLASS.toString(), ss_type + synset_offset);
+		to.put(Sense.Fields.GRAMMAR_CLASS.toString(), ss_type);
 		priority += readAntonyms(processed, to);
 		to.put(Sense.Fields.PRIORITY.toString(), priority);
 		// Log.d("AVB-Wordnet", debug + " " + glossary);

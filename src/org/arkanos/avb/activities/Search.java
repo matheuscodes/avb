@@ -69,7 +69,7 @@ public class Search extends ListActivity {
 				}
 			}
 			Log.d("AVB-Search", "Query executed...");
-			// prepare the list of all records
+			// TODO optimize me please... use 75% of the entire time.
 			List<HashMap<String, Spanned>> fillMaps = new LinkedList<HashMap<String, Spanned>>();
 			for (Sense s : ls) {
 				HashMap<String, Spanned> map = new HashMap<String, Spanned>(4);

@@ -19,12 +19,16 @@ import android.text.Spanned;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.SearchView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 public class Search extends ListActivity {
 
 	Wordnet reference = null;
+	SearchView search_box = null;
+	String last_query = null;
+	List<Sense> last_results = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -32,19 +36,18 @@ public class Search extends ListActivity {
 		setContentView(R.layout.dictionary_search);
 
 		reference = Dictionary.loadWordnet(this);
-
-		// Get the intent, verify the action and get the query
-		handleIntent(getIntent());
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		SearchBoxHelper.activateBox(this, menu);
+		search_box = SearchBoxHelper.activateBox(this, menu);
+		if (last_query != null) {
+			search_box.setQuery(last_query, false);
+		}
 		return true;
 	}
 
 	private void handleIntent(Intent intent) {
-		// TODO fix two runs of the search.
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 			String query = intent.getStringExtra(SearchManager.QUERY);
 			Log.d("AVB-Search", "Search request: " + query);
@@ -53,7 +56,18 @@ public class Search extends ListActivity {
 			String[] from = new String[] { "dict_word", "dict_class", "dict_glossary", "dict_extras" };
 			int[] to = new int[] { R.id.dict_word, R.id.dict_class, R.id.dict_glossary, R.id.dict_extras };
 
-			List<Sense> ls = Dictionary.searchSenses(query);
+			List<Sense> ls = null;
+			// FIXME This optimization makes double call not so heavy, but it still shouldn't happen.
+			if (last_query != null && last_query.compareTo(query) == 0) {
+				ls = last_results;
+			}
+			else {
+				ls = Dictionary.searchSenses(query);
+				if (ls != null) {
+					last_query = query;
+					last_results = ls;
+				}
+			}
 
 			// prepare the list of all records
 			List<HashMap<String, Spanned>> fillMaps = new ArrayList<HashMap<String, Spanned>>();
@@ -71,6 +85,7 @@ public class Search extends ListActivity {
 				map.put("dict_extras", format("<i>" + getString(R.string.dict_synonyms) + ":</i> " + rest, query));
 				fillMaps.add(map);
 			}
+
 			Log.d("AVB-Search", "Search finished: " + query);
 			// fill in the grid_item layout
 			SimpleAdapter adapter = new SimpleAdapter(this, fillMaps, R.layout.dictionary_entry, from, to);

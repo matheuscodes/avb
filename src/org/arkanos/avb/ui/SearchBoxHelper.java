@@ -14,7 +14,7 @@ import android.widget.SearchView;
 
 public class SearchBoxHelper {
 
-	public static void activateBox(Activity root, Menu menu) {
+	public static SearchView activateBox(Activity root, Menu menu) {
 		MenuInflater inflater = root.getMenuInflater();
 		inflater.inflate(R.menu.search, menu);
 
@@ -23,7 +23,8 @@ public class SearchBoxHelper {
 		SearchableInfo si = searchManager.getSearchableInfo(new ComponentName(root, Search.class));
 		sv.setSearchableInfo(si);
 		sv.setIconified(false);
-		return;
+		sv.clearFocus();
+		return sv;
 	}
 
 }

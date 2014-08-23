@@ -35,10 +35,14 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 		synchronized (this) {
 			progress_observer.defineEnd(WN_TOTAL);
 			progress_observer.defineStep(0);
+			// TODO add a resume feature
+			Dictionary.clean(); // TODO remove this
 			loadFile(WN_ADVERBS, R.raw.data_adv, R.string.load_dict_adv);
 			loadFile(WN_VERBS, R.raw.data_verb, R.string.load_dict_verb);
 			loadFile(WN_ADJECTIVES, R.raw.data_adj, R.string.load_dict_adj);
 			loadFile(WN_NOUNS, R.raw.data_noun, R.string.load_dict_noun);
+			progress_observer.replaceMessage(parent.getString(R.string.load_dict_optimize));
+			Dictionary.optimize();
 			return null;
 		}
 	}
@@ -63,13 +67,15 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 				progress_observer.replaceMessage(parent.getString(message).replace("{count}", "\n" + total));
 				while (s != null && count++ < BATCH) {
 					ContentValues data = new ContentValues();
-					readSense(s, data);
-					Dictionary.addSense(data);
+					ContentValues text = new ContentValues();
+					readSense(s, data, text);
+					Dictionary.addSense(data, text);
 					s = reader.readLine();
 				}
 				progress_observer.increaseBy(BATCH);
 				total -= BATCH;
 			}
+			reader.close(); // TODO check if ok.
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -105,7 +111,7 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 		}
 	}
 
-	private static void readSense(String from, ContentValues to) {
+	private static void readSense(String from, ContentValues to_data, ContentValues to_text) {
 		// Log.d("AVB-Wordnet", from);
 		String processed = from;
 		int priority = 0;
@@ -145,12 +151,14 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 		// debug += "<" + synonyms + ">";
 		// TODO test fix
 		// TODO review priority (too high)
-		to.put(Sense.Fields.SENSE.toString(), ss_type + synset_offset);
-		to.put(Sense.Fields.GLOSSARY.toString(), glossary.trim());
-		to.put(Sense.Fields.SYNONYMS.toString(), synonyms);
-		to.put(Sense.Fields.GRAMMAR_CLASS.toString(), ss_type);
-		priority += readAntonyms(processed, to);
-		to.put(Sense.Fields.PRIORITY.toString(), priority);
+		to_text.put(Sense.Fields.SENSE.toString(), ss_type + synset_offset);
+
+		to_text.put(Sense.Fields.GLOSSARY.toString(), glossary.trim());
+		to_text.put(Sense.Fields.SYNONYMS.toString(), synonyms);
+
+		to_data.put(Sense.Fields.SENSE.toString(), ss_type + synset_offset);
+		priority += readAntonyms(processed, to_data);
+		to_data.put(Sense.Fields.PRIORITY.toString(), priority);
 		// Log.d("AVB-Wordnet", debug + " " + glossary);
 	}
 
@@ -162,7 +170,6 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 
 		String antonyms = null;
 		int count = Integer.valueOf(p_cnt);
-		priority += count;
 		for (int i = 0; i < count; ++i) {
 			String pointer_symbol = processed.substring(0, processed.indexOf(' '));
 			processed = processed.substring(processed.indexOf(' ') + 1); // next
@@ -176,9 +183,11 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 
 				if (antonyms != null) {
 					antonyms += " " + pos + p_synset_offset;
+					++priority;
 				}
 				else {
 					antonyms = pos + p_synset_offset;
+					++priority;
 				}
 			}
 		}

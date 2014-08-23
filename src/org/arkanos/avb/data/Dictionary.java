@@ -41,9 +41,10 @@ public class Dictionary {
 		return -1;
 	}
 
-	public static void addSense(ContentValues data) {
+	public static void addSense(ContentValues data, ContentValues text) {
 		try {
 			db_write.insert(Sense.TABLE, null, data);
+			db_write.insert(Sense.TABLE_TEXT, null, text);
 		} catch (SQLiteException e) {
 			// TODO auto
 			e.printStackTrace();
@@ -53,9 +54,9 @@ public class Dictionary {
 	public static List<Sense> searchSenses(String match) {
 		List<Sense> results = new LinkedList<Sense>();
 		try {
-			Cursor c = db_read.rawQuery("SELECT * FROM " + Sense.TABLE
+			Cursor c = db_read.rawQuery("SELECT * FROM " + Sense.TABLE_TEXT
 					+ " WHERE " + Sense.Fields.SYNONYMS
-					+ " LIKE '%" + match + "%' ORDER BY " + Sense.Fields.PRIORITY + " DESC;", null);
+					+ " MATCH '" + match + "';", null);
 			if (c.moveToFirst()) {
 				do {
 					Sense newone = new Sense(c);
@@ -69,10 +70,32 @@ public class Dictionary {
 		return results;
 	}
 
-	public static void createDictionary(SQLiteDatabase sql_db) {
-		// TODO not drop
-		sql_db.execSQL("DROP TABLE IF EXISTS " + Sense.TABLE + ";");
-		sql_db.execSQL(Sense.createSQLTable());
+	public static void upgradeFrom(int version, SQLiteDatabase sql_db) {
+		if (version < 12) {
+			for (String sql : Sense.purgetSQLTables()) {
+				sql_db.execSQL(sql);
+			}
+			for (String sql : Sense.createSQLTables()) {
+				sql_db.execSQL(sql);
+			}
+		}
+		if (version < 12) {
+			sql_db.execSQL("CREATE INDEX dictionary_index_priority ON " + Sense.TABLE + " (" + Sense.Fields.PRIORITY + " DESC);");
+		}
+	}
+
+	public static void clean() {
+		// TODO only remove data
+		for (String sql : Sense.purgetSQLTables()) {
+			db_write.execSQL(sql);
+		}
+		for (String sql : Sense.createSQLTables()) {
+			db_write.execSQL(sql);
+		}
+	}
+
+	public static void optimize() {
+		db_write.execSQL("INSERT INTO " + Sense.TABLE_TEXT + "(" + Sense.TABLE_TEXT + ") VALUES('optimize');");
 	}
 
 }

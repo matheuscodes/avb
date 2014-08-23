@@ -42,16 +42,17 @@
     <!-- Loading Dictionary strings -->
 	<string name="load_dict">Loading Dictionary</string>
 	<string name="load_dict_missing">Missing Dictionary</string>
-	<string name="load_dict_confirm">The dictionary needs to be loaded. This is required only once and might take a couple minutes.\nDo you wish to proceed?</string>
+	<string name="load_dict_confirm">The dictionary needs to be loaded. This is required only once and might take quite some time.\nDo you wish to proceed?</string>
 	<string name="load_dict_start">Loading will commence shortly</string>
 	<string name="load_dict_adv">Reading adverbs&#8230;{count} senses left.</string>
 	<string name="load_dict_verb">Reading verbs&#8230;{count} senses left.</string>
 	<string name="load_dict_adj">Reading adjectives&#8230;{count} senses left.</string>
 	<string name="load_dict_noun">Reading nouns&#8230;{count} senses left.</string>
+	<string name="load_dict_optimize">Optimizing database&#8230;\nWe\'re almost done!</string>
 	
 	<!-- Searching Dictionary strings -->
 	<string name="dict_search">Search Dictionary</string>
-	<string name="dict_placeholder">Search for a word</string>
+	<string name="dict_placeholder">Search dictionary</string>
 	<string name="dict_none">No results found!</string>
 	<string name="dict_synonyms">synonyms</string>
 

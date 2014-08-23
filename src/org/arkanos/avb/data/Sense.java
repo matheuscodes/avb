@@ -8,16 +8,15 @@ public class Sense {
 	public enum GrammarClass {
 		ADVERB, VERB, ADJECTIVE, NOUN;
 
-		public static GrammarClass convert(String s) {
-			// TODO remove this temporary fix.
-			if (s.substring(0, 1).compareTo("r") == 0)
+		public static GrammarClass convert(String key) {
+			if (key.charAt(0) == 'r')
 				return ADVERB;
-			if (s.substring(0, 1).compareTo("n") == 0)
+			if (key.charAt(0) == 'n')
 				return NOUN;
 			// TODO break
-			if (s.substring(0, 1).compareTo("a") == 0 || s.substring(0, 1).compareTo("s") == 0)
+			if (key.charAt(0) == 'a' || key.charAt(0) == 's')
 				return ADJECTIVE;
-			if (s.substring(0, 1).compareTo("v") == 0)
+			if (key.charAt(0) == 'v')
 				return VERB;
 
 			return null;
@@ -31,6 +30,7 @@ public class Sense {
 	};
 
 	public static final String TABLE = "senses";
+	public static final String TABLE_TEXT = "senses_text";
 
 	public enum Fields {
 		SENSE, GLOSSARY, SYNONYMS, GRAMMAR_CLASS, ANTONYMS, PRIORITY;
@@ -41,6 +41,7 @@ public class Sense {
 		}
 	};
 
+	// TODO defaults
 	String key;
 	String glossary;
 	String synonyms;
@@ -49,31 +50,35 @@ public class Sense {
 	int priority;
 
 	public Sense(Cursor c) {
+
 		// String debug = "";
-		key = c.getString(Fields.SENSE.ordinal());
+		key = c.getString(c.getColumnIndex(Fields.SENSE.toString()));
 		// debug += key + "/";
-		glossary = c.getString(Fields.GLOSSARY.ordinal());
+		glossary = c.getString(c.getColumnIndex(Fields.GLOSSARY.toString()));
 		// debug += glossary + "/";
-		synonyms = c.getString(Fields.SYNONYMS.ordinal());
-		// debug += synonyms + "/";
-		grammar_class = GrammarClass.convert(c.getString(Fields.GRAMMAR_CLASS.ordinal()));
-		// debug += c.getString(Fields.GRAMMAR_CLASS.ordinal()) + "/";
-		antonyms = c.getString(Fields.ANTONYMS.ordinal());
-		// debug += antonyms + "/";
-		priority = c.getInt(Fields.PRIORITY.ordinal());
-		// debug += priority + "";
+		synonyms = c.getString(c.getColumnIndex(Fields.SYNONYMS.toString()));
+		// debug += synonyms;
+		grammar_class = GrammarClass.convert(key);
 		// Log.d("AVB-Sense", debug);
 	}
 
-	public static String createSQLTable() {
-		String sql = "CREATE TABLE " + Sense.TABLE + " ("
-				+ Sense.Fields.values()[0] + " TEXT PRIMARY KEY,"
-				+ Sense.Fields.values()[1] + " TEXT NOT NULL,"
-				+ Sense.Fields.values()[2] + " TEXT NOT NULL,"
-				+ Sense.Fields.values()[3] + " TEXT NOT NULL,"
-				+ Sense.Fields.values()[4] + " TEXT,"
-				+ Sense.Fields.values()[5] + " INTEGER NOT NULL DEFAULT 0 );";
-		return sql;
+	public void setPriority(int value) {
+		priority = value;
+	}
+
+	public void setAntonyms(String references) {
+		antonyms = references;
+	}
+
+	public static String[] createSQLTables() {
+		String[] results = new String[2];
+		results[0] = "CREATE TABLE " + Sense.TABLE + " ("
+				+ Sense.Fields.SENSE + " TEXT PRIMARY KEY,"
+				+ Sense.Fields.ANTONYMS + " TEXT,"
+				+ Sense.Fields.PRIORITY + " INTEGER NOT NULL DEFAULT 0 );";
+		results[1] = "CREATE VIRTUAL TABLE " + Sense.TABLE_TEXT + " USING fts4("
+				+ Sense.Fields.SENSE + "," + Sense.Fields.SYNONYMS + "," + Sense.Fields.GLOSSARY + ");";
+		return results;
 	}
 
 	public String getString(Fields field) {
@@ -93,5 +98,29 @@ public class Sense {
 		default:
 			return null;
 		}
+	}
+
+	public static String[] purgetSQLTables() {
+		String[] results = new String[2];
+		results[0] = "DROP TABLE IF EXISTS " + Sense.TABLE + ";";
+		results[1] = "DROP TABLE IF EXISTS " + Sense.TABLE_TEXT + ";";
+		return results;
+	}
+
+	public int sortValue(String query) {
+		int sort = 0;
+
+		// Head of the sense chain
+		if (synonyms.substring(0, query.length()).compareTo(query) == 0) {
+			sort += 10;
+		}
+
+		int count = 0;
+		String processed = synonyms;
+		while (processed.contains(query)) {
+			count++;// TODO finish
+		}
+
+		return sort;
 	}
 }

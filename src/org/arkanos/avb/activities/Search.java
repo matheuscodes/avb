@@ -1,7 +1,7 @@
 package org.arkanos.avb.activities;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.arkanos.avb.R;
@@ -68,9 +68,9 @@ public class Search extends ListActivity {
 					last_results = ls;
 				}
 			}
-
+			Log.d("AVB-Search", "Query executed...");
 			// prepare the list of all records
-			List<HashMap<String, Spanned>> fillMaps = new ArrayList<HashMap<String, Spanned>>();
+			List<HashMap<String, Spanned>> fillMaps = new LinkedList<HashMap<String, Spanned>>();
 			for (Sense s : ls) {
 				HashMap<String, Spanned> map = new HashMap<String, Spanned>(4);
 				String word = s.getString(Sense.Fields.SYNONYMS);

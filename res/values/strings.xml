@@ -37,7 +37,15 @@
     <string name="title_section3">Section 3</string>
     <string name="action_settings">Settings</string>
     
+    <!-- Translations Settings -->
+    <string name="de_femininum">Femininum</string>
+    <string name="de_maskulinum">Maskulinum</string>
+    <string name="de_neutrum">Neutrum</string>
+    <string name="de_plural">Plural</string>
     
+    <string name="sv_neutrum">neutrum</string>
+    <string name="sv_utrum">utrum</string>
+    <string name="sv_plural">plural</string>
     
     <!-- Loading Dictionary strings -->
 	<string name="load_dict">Loading Dictionary</string>

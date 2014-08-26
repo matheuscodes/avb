@@ -3,10 +3,13 @@ package org.arkanos.avb.activities;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.arkanos.avb.R;
+import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.Dictionary;
 import org.arkanos.avb.data.Sense;
+import org.arkanos.avb.data.Translation;
 import org.arkanos.avb.data.Wordnet;
 import org.arkanos.avb.ui.SearchBoxHelper;
 
@@ -25,7 +28,8 @@ import android.widget.TextView;
 
 public class Search extends ListActivity {
 
-	Wordnet reference = null;
+	Wordnet dictionary = null;
+	BabelTower translations = null;
 	SearchView search_box = null;
 	String last_query = null;
 	List<Sense> last_results = null;
@@ -35,7 +39,8 @@ public class Search extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.dictionary_search);
 
-		reference = Dictionary.loadWordnet(this);
+		dictionary = Dictionary.loadWordnet(this);
+		translations = BabelTower.prepareTranslations(this);
 	}
 
 	@Override
@@ -63,6 +68,7 @@ public class Search extends ListActivity {
 			}
 			else {
 				ls = Dictionary.searchSenses(query);
+				ls.addAll(BabelTower.searchTranslations(query));
 				if (ls != null) {
 					last_query = query;
 					last_results = ls;
@@ -79,10 +85,14 @@ public class Search extends ListActivity {
 				}
 				String rest = s.getString(Sense.Fields.SYNONYMS).substring(word.indexOf(' ') + 1);
 				rest = rest.trim().replace(" ", ", ");
-				map.put("dict_word", format(word, query));
+				map.put("dict_word", format("<img src=\"en\"/>  " + word, query));
 				map.put("dict_class", format("<i>" + s.getString(Sense.Fields.GRAMMAR_CLASS) + "</i>", query));
 				map.put("dict_glossary", format(s.getString(Sense.Fields.GLOSSARY), query));
-				map.put("dict_extras", format("<i>" + getString(R.string.dict_synonyms) + ":</i> " + rest, query));
+				String extras = "<i>" + getString(R.string.dict_synonyms) + ":</i> " + rest;
+				for (Map.Entry<String, Translation> t : s.getTranslations().entrySet()) {
+					extras += "<br/><br/><img src=\"" + t.getKey() + "\"/>  " + t.getValue().getContent();
+				}
+				map.put("dict_extras", format(extras, query));
 				fillMaps.add(map);
 			}
 
@@ -119,7 +129,7 @@ public class Search extends ListActivity {
 				.replace("\" ", "\"</i> ")
 				.replace(";", "<br/>")
 				.replace("_", " ")
-				.replace(query, "<u>" + query + "</u>"));
+				.replace(query, "<u>" + query + "</u>"), BabelTower.getFlags(this), null);
 	}
 
 }

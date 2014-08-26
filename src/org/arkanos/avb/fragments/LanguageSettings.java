@@ -107,7 +107,8 @@ public class LanguageSettings extends Fragment {
 		}
 		else {
 			states.put(language, false);
-			// TODO remove all
+			// TODO confirm dialog
+			BabelTower.clean();
 		}
 	}
 }

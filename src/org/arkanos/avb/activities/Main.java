@@ -1,6 +1,7 @@
 package org.arkanos.avb.activities;
 
 import org.arkanos.avb.R;
+import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.Dictionary;
 import org.arkanos.avb.data.Wordnet;
 import org.arkanos.avb.fragments.About;
@@ -19,13 +20,15 @@ public class Main extends Activity implements ActionBar.TabListener {
 
 	Fragment[] tabs = null;
 
-	Wordnet reference = null;
+	Wordnet dictionary = null;
+	BabelTower translations = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		reference = Dictionary.loadWordnet(this);
+		dictionary = Dictionary.loadWordnet(this);
+		translations = BabelTower.prepareTranslations(this);
 
 		setContentView(R.layout.activity_main);
 

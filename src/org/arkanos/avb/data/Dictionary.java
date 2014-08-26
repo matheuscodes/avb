@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.util.Log;
 
 public class Dictionary {
 	// TODO everyone synchronized
@@ -97,6 +98,25 @@ public class Dictionary {
 
 	public static void optimize() {
 		db_write.execSQL("INSERT INTO " + Sense.TABLE_TEXT + "(" + Sense.TABLE_TEXT + ") VALUES('optimize');");
+	}
+
+	public static Sense getSense(String key) {
+		try {
+			Cursor c = db_read.rawQuery("SELECT * FROM " + Sense.TABLE_TEXT
+					+ " WHERE " + Sense.Fields.SENSE
+					+ " MATCH '" + key + "';", null);
+			if (c.moveToFirst()) {
+				Sense newone = new Sense(c);
+				if (c.moveToNext()) {
+					Log.e("AVB-Dictionary", "Danger Will Robinson! Danger! Duplicated sense key.");
+				}
+				return newone;
+			}
+		} catch (SQLiteException e) {
+			// TODO auto
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }

@@ -1,11 +1,20 @@
 package org.arkanos.avb.data;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.arkanos.avb.R;
 
+import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+import android.graphics.drawable.Drawable;
+import android.text.Html.ImageGetter;
+import android.util.Log;
 
 public class BabelTower {
 	// TODO everyone synchronized
@@ -21,6 +30,32 @@ public class BabelTower {
 	private static HashMap<String, String[]> languages_configuration;
 
 	public static final String CONFIG_PATH = "config";
+
+	private static BabelTower reference = null;
+	private static Wordnet dictionary = null;
+
+	private static ImageGetter flags = null;
+
+	// TODO see if sync is needed
+	public static synchronized ImageGetter getFlags(final Context c) {
+		if (flags == null) {
+			flags = new ImageGetter() {
+				public Drawable getDrawable(String source) {
+					Drawable d = c.getResources().getDrawable(R.drawable.flag_usgb);
+
+					if (source.equals(SWEDISH))
+						d = c.getResources().getDrawable(R.drawable.flag_sv);
+
+					if (source.equals(GERMAN))
+						d = c.getResources().getDrawable(R.drawable.flag_de);
+
+					d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
+					return d;
+				}
+			};
+		}
+		return flags;
+	}
 
 	private static void loadConfigs(Context c) {
 		languages_configuration = new HashMap<String, String[]>();
@@ -64,15 +99,20 @@ public class BabelTower {
 		languages_configuration.put(SWEDISH + "_p", helper);
 	}
 
-	public static void loadTranslations(Context where) {
-		loadConfigs(where);
-		DatabaseHelper dbh = new DatabaseHelper(where);
-		db_read = dbh.getReadableDatabase();
-		db_write = dbh.getWritableDatabase();
+	public static synchronized BabelTower prepareTranslations(Activity where) {
+		if (reference == null) {
+			reference = new BabelTower(); // TODO this is ugly as hell.
+			dictionary = Dictionary.loadWordnet(where); // Mapping dependency.
+			loadConfigs(where);
+			DatabaseHelper dbh = new DatabaseHelper(where);
+			db_read = dbh.getReadableDatabase();
+			db_write = dbh.getWritableDatabase();
+		}
+		return reference;
 	}
 
 	public static void upgradeFrom(int version, SQLiteDatabase sql_db) {
-		if (version < 13) {
+		if (version < 17) {
 			for (String sql : Translation.purgetSQLTables()) {
 				sql_db.execSQL(sql);
 			}
@@ -92,6 +132,11 @@ public class BabelTower {
 		}
 	}
 
+	public static void clean(String language) {
+		db_write.execSQL("DELETE FROM " + Translation.TABLE + " WHERE language = '" + language + "';");
+		db_write.execSQL("DELETE FROM " + Translation.TABLE_TEXT + " WHERE language MATCH '" + language + "';");
+	}
+
 	public static void optimize() {
 		db_write.execSQL("INSERT INTO " + Translation.TABLE_TEXT + "(" + Translation.TABLE_TEXT + ") VALUES('optimize');");
 	}
@@ -102,5 +147,46 @@ public class BabelTower {
 		if (l.equals(SWEDISH))
 			return c.getString(R.string.languages_sv_pretty);
 		return "";
+	}
+
+	public static void addTranslation(ContentValues data, String language) {
+		data.put(Translation.Fields.LANGUAGE.toString(), language);
+		try {
+			db_write.insert(Translation.TABLE, null, data);
+		} catch (SQLiteException e) {
+			Log.e("AVB-BabelTower", e.toString());
+		}
+	}
+
+	public static void addTranslation(String key, String synonyms, String language) {
+		ContentValues data = new ContentValues();
+		data.put(Translation.Fields.LANGUAGE.toString(), language);
+		data.put(Translation.Fields.SYNONYMS.toString(), synonyms);
+		data.put(Translation.Fields.SENSE_KEY.toString(), key);
+		try {
+			db_write.insert(Translation.TABLE_TEXT, null, data);
+		} catch (SQLiteException e) {
+			Log.e("AVB-BabelTower", e.toString());
+		}
+	}
+
+	public static List<Sense> searchTranslations(String query) {
+		List<Sense> results = new LinkedList<Sense>();
+		try {
+			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE_TEXT
+					+ " WHERE " + Translation.Fields.SYNONYMS
+					+ " MATCH '" + query + "';", null);
+			if (c.moveToFirst()) {
+				do {
+					Sense newone = Dictionary.getSense(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())));
+					newone.addTranslation(new Translation(c));
+					results.add(newone);
+				} while (c.moveToNext());
+			}
+		} catch (SQLiteException e) {
+			// TODO auto
+			e.printStackTrace();
+		}
+		return results;
 	}
 }

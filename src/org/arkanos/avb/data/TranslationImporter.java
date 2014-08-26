@@ -35,6 +35,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 
 	@Override
 	protected void onPreExecute() {
+		BabelTower.clean(language); // TODO test this, seems not running
 		dialog.replaceTitle(title);
 		dialog.replaceMessage(message);
 		dialog.startIt();
@@ -59,7 +60,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 				InputStream in = am.open(FILE_NAME + language);
 				BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 				String temp = reader.readLine();
-				int total = 500;// Integer.parseInt(temp);
+				int total = Integer.parseInt(temp);
 				dialog.defineEnd(total);
 				publishProgress(Integer.valueOf(total));
 				while (total > 0) {
@@ -68,7 +69,6 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 						String key = reader.readLine();
 						String synonyms = " ";
 						ContentValues data = new ContentValues();
-						ContentValues text = new ContentValues();
 						for (int syns = Integer.parseInt(reader.readLine()); syns > 0; --syns) {
 							String translation = reader.readLine();
 							String gclass = reader.readLine();
@@ -76,7 +76,15 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 							// data.put(key, value);
 							// Translations.addTranslation(data);
 							synonyms += translation + " ";
+							if (gclass != null && gclass.length() > 0) {
+								data.put(Translation.Fields.GRAMMAR_CLASS.toString(), language + "_" + gclass);
+							}
+							data.put(Translation.Fields.SENSE_KEY.toString(), key);
+							data.put(Translation.Fields.TRUST.toString(), trust);
+							data.put(Translation.Fields.TERM.toString(), translation);
+							BabelTower.addTranslation(data, language);
 						}
+						BabelTower.addTranslation(key, synonyms, language);
 						--total;
 					}
 					publishProgress(Integer.valueOf(total), BATCH);

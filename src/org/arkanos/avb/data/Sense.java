@@ -1,5 +1,6 @@
 package org.arkanos.avb.data;
 
+import java.util.HashMap;
 import java.util.Locale;
 
 import android.database.Cursor;
@@ -50,7 +51,10 @@ public class Sense {
 	String antonyms;
 	int priority;
 
+	HashMap<String, Translation> translations;
+
 	public Sense(Cursor c) {
+		translations = new HashMap<String, Translation>();
 		// String debug = "";
 		key = c.getString(c.getColumnIndex(Fields.SENSE.toString()));
 		// debug += key + "/";
@@ -122,5 +126,13 @@ public class Sense {
 		}
 
 		return sort;
+	}
+
+	public void addTranslation(Translation translation) {
+		translations.put(translation.getLanguage(), translation);
+	}
+
+	public HashMap<String, Translation> getTranslations() {
+		return translations;
 	}
 }

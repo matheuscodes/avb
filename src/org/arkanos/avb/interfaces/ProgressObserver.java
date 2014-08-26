@@ -10,7 +10,9 @@ public interface ProgressObserver {
 
 	public void increaseStepBy(int value);
 
-	public void replaceMessage(String what);
+	public void replaceMessage(String text);
+
+	public void replaceTitle(String text);
 
 	public void finishIt();
 

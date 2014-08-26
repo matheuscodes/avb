@@ -1,34 +1,20 @@
 package org.arkanos.avb.ui;
 
-import org.arkanos.avb.R;
 import org.arkanos.avb.interfaces.ProgressObserver;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 
-public class DictionaryLoadingDialog extends ProgressDialog implements
-		ProgressObserver {
-	// TODO replace with LoadingDialog
-	String text = null;
-	Activity parent = null;
+public class LoadingDialog extends ProgressDialog implements ProgressObserver {
 
-	public DictionaryLoadingDialog(Activity context) {
+	public LoadingDialog(Context context) {
 		super(context);
-		parent = context;
 		// Set the progress dialog to display a horizontal progress bar
 		this.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		this.setTitle(R.string.load_dict);
-		text = context.getString(R.string.load_dict_start);
-		this.setMessage(text);
 		this.setCancelable(false);
 		this.setIndeterminate(false);
 		this.setMax(100);
 		this.setProgress(0);
-	}
-
-	@Override
-	public void replaceTitle(String text) {
-		setTitle(text);
 	}
 
 	@Override
@@ -52,14 +38,13 @@ public class DictionaryLoadingDialog extends ProgressDialog implements
 	}
 
 	@Override
-	public void replaceMessage(String what) {
-		this.text = what;
-		parent.runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				setMessage(text);
-			}
-		});
+	public void replaceMessage(String text) {
+		setMessage(text);
+	}
+
+	@Override
+	public void replaceTitle(String text) {
+		setTitle(text);
 	}
 
 	@Override
@@ -71,5 +56,4 @@ public class DictionaryLoadingDialog extends ProgressDialog implements
 	public void increaseStepBy(int value) {
 		this.incrementSecondaryProgressBy(value);
 	}
-
 }

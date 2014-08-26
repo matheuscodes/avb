@@ -4,6 +4,7 @@ import org.arkanos.avb.R;
 import org.arkanos.avb.data.Dictionary;
 import org.arkanos.avb.data.Wordnet;
 import org.arkanos.avb.fragments.About;
+import org.arkanos.avb.fragments.LanguageSettings;
 import org.arkanos.avb.ui.SearchBoxHelper;
 
 import android.app.ActionBar;
@@ -33,7 +34,7 @@ public class Main extends Activity implements ActionBar.TabListener {
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-		tabs = new Fragment[1];
+		tabs = new Fragment[2];
 
 		/** Begin **/
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -46,6 +47,16 @@ public class Main extends Activity implements ActionBar.TabListener {
 				actionBar
 						.newTab()
 						.setText(R.string.about_tab)
+						.setTabListener(this));
+
+		helper = new LanguageSettings();
+		ft.add(android.R.id.content, helper, "languages");
+		ft.detach(helper);
+		tabs[1] = helper;
+		actionBar.addTab(
+				actionBar
+						.newTab()
+						.setText(R.string.languages_tab)
 						.setTabListener(this));
 
 		if (savedInstanceState != null) {

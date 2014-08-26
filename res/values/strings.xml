@@ -30,12 +30,18 @@
         ]]>
     </string>
     
+    
     <!-- Search Screen -->
     <string name="search_tab">Search</string>
     
     <string name="title_section2">Section 2</string>
     <string name="title_section3">Section 3</string>
     <string name="action_settings">Settings</string>
+    
+    <!-- Language Settings -->
+    <string name="languages_tab">Languages</string>
+    <string name="languages_sv_pretty">Swedish</string>
+    <string name="languages_de_pretty">German</string>
     
     <!-- Translations Settings -->
     <string name="de_femininum">Femininum</string>
@@ -47,11 +53,16 @@
     <string name="sv_utrum">utrum</string>
     <string name="sv_plural">plural</string>
     
+    <string name="load_translation">Loading data for {language}</string>
+    <string name="load_translation_text">{count} senses left.</string>
+    <string name="load_translation_start">Loading will commence shortly.</string>
+    
+    
     <!-- Loading Dictionary strings -->
 	<string name="load_dict">Loading Dictionary</string>
 	<string name="load_dict_missing">Missing Dictionary</string>
 	<string name="load_dict_confirm">The dictionary needs to be loaded. This is required only once and might take quite some time.\nDo you wish to proceed?</string>
-	<string name="load_dict_start">Loading will commence shortly</string>
+	<string name="load_dict_start">Loading will commence shortly.</string>
 	<string name="load_dict_adv">Reading adverbs&#8230;{count} senses left.</string>
 	<string name="load_dict_verb">Reading verbs&#8230;{count} senses left.</string>
 	<string name="load_dict_adj">Reading adjectives&#8230;{count} senses left.</string>

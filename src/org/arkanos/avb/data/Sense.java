@@ -5,6 +5,7 @@ import java.util.Locale;
 import android.database.Cursor;
 
 public class Sense {
+	// TODO maybe remove unnecessary complexity
 	public enum GrammarClass {
 		ADVERB, VERB, ADJECTIVE, NOUN;
 
@@ -50,7 +51,6 @@ public class Sense {
 	int priority;
 
 	public Sense(Cursor c) {
-
 		// String debug = "";
 		key = c.getString(c.getColumnIndex(Fields.SENSE.toString()));
 		// debug += key + "/";
@@ -115,10 +115,10 @@ public class Sense {
 			sort += 10;
 		}
 
-		int count = 0;
+		// int count = 0;
 		String processed = synonyms;
 		while (processed.contains(query)) {
-			count++;// TODO finish
+			// count++;// TODO finish
 		}
 
 		return sort;

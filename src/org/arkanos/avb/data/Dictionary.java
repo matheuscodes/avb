@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 
 public class Dictionary {
+	// TODO everyone synchronized
 	private static SQLiteDatabase db_write = null;
 	private static SQLiteDatabase db_read = null;
 

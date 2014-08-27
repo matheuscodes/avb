@@ -3,7 +3,6 @@ package org.arkanos.avb.data;
 import java.util.Locale;
 
 import android.database.Cursor;
-import android.util.Log;
 
 public class Translation {
 
@@ -28,14 +27,14 @@ public class Translation {
 	private float trust;
 
 	public Translation(Cursor c) {
-		String debug = "";
+		// String debug = "";
 		key = c.getString(c.getColumnIndex(Fields.SENSE_KEY.toString()));
-		debug += key + "/";
+		// debug += key + "/";
 		language = c.getString(c.getColumnIndex(Fields.LANGUAGE.toString()));
-		debug += language + "/";
+		// debug += language + "/";
 		synonyms = c.getString(c.getColumnIndex(Fields.SYNONYMS.toString()));
-		debug += synonyms;
-		Log.d("AVB-Translation", debug);
+		// debug += synonyms;
+		// Log.d("AVB-Translation", debug);
 	}
 
 	public static String[] createSQLTables() {
@@ -72,6 +71,14 @@ public class Translation {
 	public String getContent() {
 		// TODO what to do when it is term instead?
 		return synonyms;
+	}
+
+	public void setTerm(String string) {
+		term = string;
+	}
+
+	public String getTerm() {
+		return term;
 	}
 
 }

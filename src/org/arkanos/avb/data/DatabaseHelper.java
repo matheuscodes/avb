@@ -7,10 +7,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public static final String DATABASE_NAME = "avb_data.db";
-	public static final int DATABASE_VERSION = 17;
+	public static final int DATABASE_VERSION = 21;
 
 	public DatabaseHelper(Context context) {
-		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		// super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		// TODO check for the SD card first, if fails, close.
+		super(context, context.getExternalFilesDir(null).getAbsolutePath() + "/" + DATABASE_NAME, null, DATABASE_VERSION);
 	}
 
 	@Override

@@ -99,8 +99,8 @@ public class LanguageSettings extends Fragment {
 	private void handleCheck(CheckBox cb, LoadingDialog ld, String language) {
 		if (cb.isChecked()) {
 			TranslationImporter caller;
-			LoadingDialog progressDialog = new LoadingDialog(cb.getContext());
-			caller = new TranslationImporter(progressDialog, language, cb.getContext());
+
+			caller = new TranslationImporter(language, cb.getContext());
 			caller.execute();
 			states.remove(language);
 			states.put(language, true);

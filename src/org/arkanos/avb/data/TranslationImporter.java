@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 
 import org.arkanos.avb.R;
 import org.arkanos.avb.interfaces.ProgressObserver;
+import org.arkanos.avb.ui.LoadingDialog;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -25,12 +26,20 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 	private String message = null;
 	private Context parent = null;
 
-	public TranslationImporter(ProgressObserver po, String l, Context c) {
+	public TranslationImporter(String l, Context c) {
+		dialog = new LoadingDialog(c);
 		title = c.getString(R.string.load_translation).replace("{language}", BabelTower.prettyName(l, c));
 		message = c.getString(R.string.load_translation_start);
 		language = l;
 		parent = c;
-		dialog = po;
+	}
+
+	public void createNewDialog(Context c) {
+		// TODO use and might not work because of synchronized
+		dialog = new LoadingDialog(c);
+		dialog.replaceTitle(title);
+		dialog.replaceMessage(c.getString(R.string.load_translation_wait));
+		dialog.startIt();
 	}
 
 	@Override
@@ -67,7 +76,6 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 					int count = 0;
 					while (total > 0 && count++ < BATCH) {
 						String key = reader.readLine();
-						String synonyms = " ";
 						ContentValues data = new ContentValues();
 						for (int syns = Integer.parseInt(reader.readLine()); syns > 0; --syns) {
 							String translation = reader.readLine();
@@ -75,7 +83,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 							float trust = Float.parseFloat(reader.readLine());
 							// data.put(key, value);
 							// Translations.addTranslation(data);
-							synonyms += translation + " ";
+
 							if (gclass != null && gclass.length() > 0) {
 								data.put(Translation.Fields.GRAMMAR_CLASS.toString(), language + "_" + gclass);
 							}
@@ -84,11 +92,13 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 							data.put(Translation.Fields.TERM.toString(), translation);
 							BabelTower.addTranslation(data, language);
 						}
+						String synonyms = reader.readLine();
 						BabelTower.addTranslation(key, synonyms, language);
 						--total;
 					}
 					publishProgress(Integer.valueOf(total), BATCH);
 				}
+				BabelTower.optimize(); // TODO tell the user
 				reader.close();
 			} catch (IOException e) {
 				Log.e("AVB-TranslationImporter", e.toString());

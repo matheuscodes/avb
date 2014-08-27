@@ -81,8 +81,9 @@ public class Dictionary {
 				sql_db.execSQL(sql);
 			}
 		}
-		if (version < 12) {
-			sql_db.execSQL("CREATE INDEX dictionary_index_priority ON " + Sense.TABLE + " (" + Sense.Fields.PRIORITY + " DESC);");
+		if (version < 18) {
+			Log.d("AVB-Dictionary", "Moving to version 18.");
+			sql_db.execSQL("CREATE INDEX dictionary_index_priority_desc ON " + Sense.TABLE + " (" + Sense.Fields.PRIORITY + " DESC);");
 		}
 	}
 

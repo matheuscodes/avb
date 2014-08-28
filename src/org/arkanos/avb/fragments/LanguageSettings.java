@@ -35,6 +35,7 @@ public class LanguageSettings extends Fragment {
 
 		states = new HashMap<String, Boolean>();
 		try {
+			// TODO move to the db
 			FileInputStream fis = container.getContext().openFileInput(BabelTower.CONFIG_PATH);
 			int size = fis.read();
 			while (size > 0) {

@@ -81,8 +81,6 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 							String translation = reader.readLine();
 							String gclass = reader.readLine();
 							float trust = Float.parseFloat(reader.readLine());
-							// data.put(key, value);
-							// Translations.addTranslation(data);
 
 							if (gclass != null && gclass.length() > 0) {
 								data.put(Translation.Fields.GRAMMAR_CLASS.toString(), language + "_" + gclass);

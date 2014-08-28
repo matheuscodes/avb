@@ -39,6 +39,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 		dialog.replaceTitle(title);
 		dialog.replaceMessage(parent.getString(R.string.load_translation_clean));
 		dialog.startIt();
+		// FIXME the dialog does not appear while cleaning.
 		BabelTower.clean(language);
 		dialog.replaceTitle(title);
 		dialog.replaceMessage(message);
@@ -56,6 +57,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 	protected Void doInBackground(Void... arg0) {
 		// Only one importer shall run at a time.
 		Log.d("AVB-TranslationImporter", "Started importing " + language);
+		// TODO this desperately needs optimization, maybe turn off-on indexes.
 		synchronized (dialog) {
 			message = parent.getString(R.string.load_translation_text);
 			try {

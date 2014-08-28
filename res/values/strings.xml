@@ -57,6 +57,7 @@
     <string name="load_translation_text">{count} senses left.</string>
     <string name="load_translation_start">Loading will commence shortly.</string>
     <string name="load_translation_wait">Waiting for update.</string>
+    <string name="load_translation_clean">Cleaning the database.</string>
     
     
     <!-- Loading Dictionary strings -->
@@ -69,6 +70,7 @@
 	<string name="load_dict_adj">Reading adjectives&#8230;{count} senses left.</string>
 	<string name="load_dict_noun">Reading nouns&#8230;{count} senses left.</string>
 	<string name="load_dict_optimize">Optimizing database&#8230;\nWe\'re almost done!</string>
+	<string name="load_dict_wait">Waiting for update.</string>
 	
 	<!-- Searching Dictionary strings -->
 	<string name="dict_search">Search Dictionary</string>

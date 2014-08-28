@@ -34,20 +34,14 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 		parent = c;
 	}
 
-	public void createNewDialog(Context c) {
-		// TODO use and might not work because of synchronized
-		dialog = new LoadingDialog(c);
-		dialog.replaceTitle(title);
-		dialog.replaceMessage(c.getString(R.string.load_translation_wait));
-		dialog.startIt();
-	}
-
 	@Override
 	protected void onPreExecute() {
-		BabelTower.clean(language); // TODO test this, seems not running
+		dialog.replaceTitle(title);
+		dialog.replaceMessage(parent.getString(R.string.load_translation_clean));
+		dialog.startIt();
+		BabelTower.clean(language);
 		dialog.replaceTitle(title);
 		dialog.replaceMessage(message);
-		dialog.startIt();
 	}
 
 	@Override

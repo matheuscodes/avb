@@ -3,8 +3,6 @@ package org.arkanos.avb.data;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.arkanos.avb.ui.DictionaryLoadingDialog;
-
 import android.app.Activity;
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -21,11 +19,10 @@ public class Dictionary {
 
 	public static synchronized Wordnet loadWordnet(Activity context) {
 		if (Dictionary.wordnet == null) {
-			DictionaryLoadingDialog progressDialog = new DictionaryLoadingDialog(context);
 			DatabaseHelper dbh = new DatabaseHelper(context);
 			db_read = dbh.getReadableDatabase();
 			db_write = dbh.getWritableDatabase();
-			Dictionary.wordnet = new Wordnet(progressDialog, context);
+			Dictionary.wordnet = new Wordnet(context);
 		}
 		return wordnet;
 	}

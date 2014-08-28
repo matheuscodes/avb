@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 
 import org.arkanos.avb.R;
 import org.arkanos.avb.interfaces.ProgressObserver;
+import org.arkanos.avb.ui.LoadingDialog;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -82,8 +83,10 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 		}
 	}
 
-	public Wordnet(ProgressObserver po, Activity who) {
-		progress_observer = po;
+	public Wordnet(Activity who) {
+		progress_observer = new LoadingDialog(who);
+		progress_observer.replaceTitle(who.getString(R.string.load_dict));
+		progress_observer.replaceMessage(who.getString(R.string.load_dict_start));
 		parent = who;
 		if (Dictionary.getSize() < WN_TOTAL) {
 			AlertDialog.Builder ad = new AlertDialog.Builder(parent);
@@ -194,5 +197,4 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 		to.put(Sense.Fields.ANTONYMS.toString(), antonyms);
 		return priority;
 	}
-
 }

@@ -13,7 +13,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 
 public class Main extends Activity implements ActionBar.TabListener {
@@ -28,18 +27,6 @@ public class Main extends Activity implements ActionBar.TabListener {
 		super.onCreate(savedInstanceState);
 
 		translations = BabelTower.prepareTranslations(this);
-		BabelTower.optimize();
-		Log.d("AVB-Main", "Started reading partition 18.");
-		BabelTower.getBestKnown(18, BabelTower.GERMAN);
-		BabelTower.getAverageKnown(18, BabelTower.GERMAN);
-		BabelTower.getWorstKnown(18, BabelTower.GERMAN);
-		Log.d("AVB-Main", "Finished reading partition 18.");
-
-		Log.d("AVB-Main", "Started reading partition 90.");
-		BabelTower.getBestKnown(90, BabelTower.GERMAN);
-		BabelTower.getAverageKnown(90, BabelTower.GERMAN);
-		BabelTower.getWorstKnown(90, BabelTower.GERMAN);
-		Log.d("AVB-Main", "Finished reading partition 90.");
 
 		setContentView(R.layout.activity_main);
 

@@ -210,7 +210,6 @@ public class BabelTower {
 					+ Translation.Fields.SENSE_KEY + " MATCH '" + key + "';", null);
 			if (c.moveToFirst()) {
 				do {
-					Log.d("AVB-Taskforce", "Reading each key.");
 					Translation newone = new Translation(c);
 					if (c.getString(c.getColumnIndex(Translation.Fields.LANGUAGE.toString())).equals(language)) {
 						newone = new Translation(c);
@@ -225,105 +224,83 @@ public class BabelTower {
 		return null;
 	}
 
-	public static Translation[] getBestKnown(int count, String language) {
+	public static final int BEST_KNOWN = 0;
+	public static final int AVERAGE_KNOWN = 1;
+	public static final int WORST_KNOWN = 2;
+
+	public static Translation[][] getPartition(int size, String language) {
+		Translation[][] results = new Translation[3][];
+
+		Cursor c = db_read.rawQuery("SELECT"
+				+ " MAX(" + Translation.Fields.CONFIDENCE + "),"
+				+ " AVG(" + Translation.Fields.CONFIDENCE + "),"
+				+ " MIN(" + Translation.Fields.CONFIDENCE + "),"
+				+ " MAX(" + Translation.Fields.TRUST + "),"
+				+ " AVG(" + Translation.Fields.TRUST + "),"
+				+ " MIN(" + Translation.Fields.TRUST + ")"
+				+ " FROM " + Translation.TABLE
+				+ " WHERE " + Translation.Fields.LANGUAGE + " = '" + language + "';", null);
+
+		if (c.moveToFirst()) {
+			float c_max = c.getFloat(0);
+			float c_avg = c.getFloat(1);
+			float c_min = c.getFloat(2);
+
+			float t_max = c.getFloat(3);
+			float t_avg = c.getFloat(4);
+			float t_min = c.getFloat(5);
+
+			int count = size / 3;
+			results[BEST_KNOWN] = selectPartition(count, language, (c_max - c_avg) * 0.80f + c_avg, c_max, t_min, t_avg);
+
+			count = (size - results[BEST_KNOWN].length) / 2;
+			results[WORST_KNOWN] = selectPartition(count, language, c_min, (c_avg - c_min) * 0.2f + c_min, t_avg, t_max);
+
+			count = size - results[BEST_KNOWN].length - results[WORST_KNOWN].length;
+			results[AVERAGE_KNOWN] = selectPartition(count, language, c_avg - (c_avg - c_min) * 0.2f, (c_max - c_avg) * 0.2f + c_avg, t_min, t_max);
+
+		}
+
+		return results;
+	}
+
+	private static Translation[] selectPartition(int count, String language, float c_min, float c_max, float t_min, float t_max) {
 		Translation[] result = new Translation[count];
 		int read = 0;
 		try {
-			Log.d("AVB-BabelTower", "Fetching best known.");
+			// Log.d("AVB-BabelTower", "Trying to fetch " + count + ".");
 			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE
-					+ " WHERE " + Translation.Fields.LANGUAGE + " = '" + language + "' "
-					+ " ORDER BY " + Translation.Fields.CONFIDENCE + " DESC LIMIT " + count + ";", null);
-			Log.d("AVB-BabelTower", "Fetching done.");
+					+ " WHERE " + Translation.Fields.LANGUAGE + " = '" + language + "'"
+					+ " AND " + Translation.Fields.TRUST + " <= " + t_max
+					+ " AND " + Translation.Fields.TRUST + " >= " + t_min
+					+ " AND " + Translation.Fields.CONFIDENCE + " <= " + c_max
+					+ " AND " + Translation.Fields.CONFIDENCE + " >= " + c_min
+					+ " LIMIT " + count + ";", null);
+
 			if (c.moveToFirst()) {
+				// Log.d("AVB-BabelTower", "Fetching done.");
 				do {
-					Log.d("AVB-Taskforce", "Reading each term.");
 					result[read] = BabelTower.getTranslation(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())), language);
 					result[read++].setTerm(c.getString(c.getColumnIndex(Translation.Fields.TERM.toString())));
 				} while (c.moveToNext());
-			}
-			Log.d("AVB-BabelTower", "Fetched " + read + " best known.");
-			return result;
-		} catch (SQLiteException e) {
-			// TODO auto
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	public static Translation[] getWorstKnown(int count, String language) {
-		Translation[] result = new Translation[count];
-		int read = 0;
-		try {
-			Log.d("AVB-BabelTower", "Fetching worst known.");
-			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE
-					+ " WHERE " + Translation.Fields.LANGUAGE + " = '" + language + "' "
-					+ " ORDER BY " + Translation.Fields.CONFIDENCE + " ASC, "
-					+ Translation.Fields.TRUST + " DESC LIMIT " + count + ";", null);
-
-			if (c.moveToFirst()) {
-				do {
-					result[read] = BabelTower.getTranslation(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())), language);
-					result[read++].setTerm(c.getString(c.getColumnIndex(Translation.Fields.TERM.toString())));
-				} while (c.moveToNext());
-			}
-			Log.d("AVB-BabelTower", "Fetched " + read + " worst known.");
-			return result;
-		} catch (SQLiteException e) {
-			// TODO auto
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	public static Translation[] getAverageKnown(int count, String language) {
-		Translation[] result = new Translation[count];
-		int up = count / 2;
-
-		int read = 0;
-		try {
-			Log.d("AVB-BabelTower", "Fetching average known.");
-			Cursor c = db_read.rawQuery("SELECT AVG(" + Translation.Fields.CONFIDENCE + ") FROM " + Translation.TABLE
-					+ " WHERE " + Translation.Fields.LANGUAGE + " = '" + language + "';", null);
-			if (c.moveToFirst()) {
-				float avg = c.getFloat(0);
-				c.close();
-				c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE
-						+ " WHERE " + Translation.Fields.LANGUAGE + " = '" + language + "' "
-						+ " AND " + Translation.Fields.CONFIDENCE + " >= " + avg
-						+ " ORDER BY " + Translation.Fields.CONFIDENCE + " ASC, "
-						+ Translation.Fields.TRUST + " DESC LIMIT " + up + ";", null);
-				if (c.moveToFirst()) {
-					do {
-						result[read] = BabelTower.getTranslation(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())), language);
-						result[read++].setTerm(c.getString(c.getColumnIndex(Translation.Fields.TERM.toString())));
-					} while (c.moveToNext());
+				// Log.d("AVB-BabelTower", "Fetched " + read + ".");
+				if (result.length > count) {
+					int i = 0;
+					Translation[] copy = new Translation[read];
+					for (Translation t : result) {
+						if (t != null) {
+							copy[i++] = t;
+						}
+					}
+					return copy;
 				}
-				c.close();
-
-				c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE
-						+ " WHERE " + Translation.Fields.LANGUAGE + " = '" + language + "' "
-						+ " AND " + Translation.Fields.CONFIDENCE + " <= " + avg
-						+ " ORDER BY " + Translation.Fields.CONFIDENCE + " DESC, "
-						+ Translation.Fields.TRUST + " DESC LIMIT " + (count - read) + ";", null);
-
-				if (c.moveToFirst()) {
-					do {
-						result[read] = BabelTower.getTranslation(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())), language);
-						result[read++].setTerm(c.getString(c.getColumnIndex(Translation.Fields.TERM.toString())));
-					} while (c.moveToNext());
-				}
-				c.close();
-				// TODO if read < count, relocate the array.
-
-				Log.d("AVB-BabelTower", "Fetched " + read + " average known.");
 				return result;
 			}
-			c.close();// TODO close in all other cursors too dict and babel
+			return new Translation[0];
 		} catch (SQLiteException e) {
 			// TODO auto
 			e.printStackTrace();
 		}
-
 		return null;
 	}
 }

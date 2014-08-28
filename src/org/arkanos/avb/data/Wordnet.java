@@ -16,7 +16,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class Wordnet extends AsyncTask<Void, Void, Void> {
+public class Wordnet extends AsyncTask<Void, Integer, Void> {
 
 	public static final String WN_VERSION = "3.0";
 	public static final int WN_TOTAL = 117659;
@@ -30,6 +30,14 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 
 	private static ProgressObserver progress_observer = null;
 	private static Activity parent = null;
+
+	@Override
+	protected void onProgressUpdate(Integer... i) {
+		progress_observer.replaceMessage(parent.getString(i[0]).replace("{count}", "\n" + i[1]));
+		if (i.length > 2) {
+			progress_observer.increaseBy(i[2].intValue());
+		}
+	}
 
 	@Override
 	protected Void doInBackground(Void... v) {
@@ -63,9 +71,10 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 			String s;
 			reader.skip(Wordnet.SKIP);
 			s = reader.readLine();
+			publishProgress(message, total);
 			while (s != null) {
 				int count = 0;
-				progress_observer.replaceMessage(parent.getString(message).replace("{count}", "\n" + total));
+
 				while (s != null && count++ < BATCH) {
 					ContentValues data = new ContentValues();
 					ContentValues text = new ContentValues();
@@ -73,8 +82,8 @@ public class Wordnet extends AsyncTask<Void, Void, Void> {
 					Dictionary.addSense(data, text);
 					s = reader.readLine();
 				}
-				progress_observer.increaseBy(BATCH);
 				total -= BATCH;
+				publishProgress(message, total, BATCH);
 			}
 			reader.close(); // TODO check if ok.
 		} catch (IOException e) {

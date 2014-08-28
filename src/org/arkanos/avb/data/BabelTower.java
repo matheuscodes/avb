@@ -36,6 +36,8 @@ public class BabelTower {
 
 	private static ImageGetter flags = null;
 
+	// TODO optimization: one table per language +faster drop +table size
+
 	// TODO see if sync is needed
 	public static synchronized ImageGetter getFlags(final Context c) {
 		if (flags == null) {
@@ -125,14 +127,12 @@ public class BabelTower {
 			// TODO call optmize to tranlation text table
 			// TODO probably tables need optimization every time new language installed
 			// TODO IF NOT EXISTS
-			sql_db.execSQL("CREATE INDEX translation_index_confidence_desc ON " + Translation.TABLE + " (" + Translation.Fields.CONFIDENCE + " DESC);");
-			sql_db.execSQL("CREATE INDEX translation_index_confidence_asc ON " + Translation.TABLE + " (" + Translation.Fields.CONFIDENCE + " ASC);");
+			sql_db.execSQL("CREATE INDEX translation_index_confidence_trust_language ON "
+					+ Translation.TABLE + " ("
+					+ Translation.Fields.CONFIDENCE + ","
+					+ Translation.Fields.TRUST + ","
+					+ Translation.Fields.LANGUAGE + ");");
 			sql_db.execSQL("CREATE INDEX translation_index_language ON " + Translation.TABLE + " (" + Translation.Fields.LANGUAGE + ");");
-		}
-
-		if (version < 21) {
-			Log.d("AVB-BabelTower", "Moving to version 21.");
-			sql_db.execSQL("CREATE INDEX translation_index_trust_desc ON " + Translation.TABLE + " (" + Translation.Fields.TRUST + " DESC);");
 		}
 	}
 

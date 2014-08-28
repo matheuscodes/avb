@@ -2,7 +2,7 @@ package org.arkanos.avb.activities;
 
 import org.arkanos.avb.R;
 import org.arkanos.avb.data.BabelTower;
-import org.arkanos.avb.data.Wordnet;
+import org.arkanos.avb.data.WordnetImporter;
 import org.arkanos.avb.fragments.About;
 import org.arkanos.avb.fragments.LanguageSettings;
 import org.arkanos.avb.ui.SearchBoxHelper;
@@ -19,7 +19,7 @@ public class Main extends Activity implements ActionBar.TabListener {
 
 	Fragment[] tabs = null;
 
-	Wordnet dictionary = null;
+	WordnetImporter dictionary = null;
 	BabelTower translations = null;
 
 	@Override

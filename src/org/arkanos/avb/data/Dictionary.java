@@ -15,14 +15,14 @@ public class Dictionary {
 	private static SQLiteDatabase db_write = null;
 	private static SQLiteDatabase db_read = null;
 
-	private static Wordnet wordnet = null;
+	private static WordnetImporter wordnet = null;
 
-	public static synchronized Wordnet loadWordnet(Activity context) {
+	public static synchronized WordnetImporter loadWordnet(Activity context) {
 		if (Dictionary.wordnet == null) {
 			DatabaseHelper dbh = new DatabaseHelper(context);
 			db_read = dbh.getReadableDatabase();
 			db_write = dbh.getWritableDatabase();
-			Dictionary.wordnet = new Wordnet(context);
+			Dictionary.wordnet = new WordnetImporter(context);
 		}
 		return wordnet;
 	}

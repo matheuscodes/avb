@@ -10,7 +10,7 @@ import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.Dictionary;
 import org.arkanos.avb.data.Sense;
 import org.arkanos.avb.data.Translation;
-import org.arkanos.avb.data.Wordnet;
+import org.arkanos.avb.data.WordnetImporter;
 import org.arkanos.avb.ui.SearchBoxHelper;
 
 import android.app.ListActivity;
@@ -28,7 +28,7 @@ import android.widget.TextView;
 
 public class Search extends ListActivity {
 
-	Wordnet dictionary = null;
+	WordnetImporter dictionary = null;
 	BabelTower translations = null;
 	SearchView search_box = null;
 	String last_query = null;

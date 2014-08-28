@@ -16,7 +16,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class Wordnet extends AsyncTask<Void, Integer, Void> {
+public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 
 	public static final String WN_VERSION = "3.0";
 	public static final int WN_TOTAL = 117659;
@@ -69,7 +69,7 @@ public class Wordnet extends AsyncTask<Void, Integer, Void> {
 			InputStream in = parent.getResources().openRawResource(file);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 			String s;
-			reader.skip(Wordnet.SKIP);
+			reader.skip(WordnetImporter.SKIP);
 			s = reader.readLine();
 			publishProgress(message, total);
 			while (s != null) {
@@ -92,7 +92,7 @@ public class Wordnet extends AsyncTask<Void, Integer, Void> {
 		}
 	}
 
-	public Wordnet(Activity who) {
+	public WordnetImporter(Activity who) {
 		progress_observer = new LoadingDialog(who);
 		progress_observer.replaceTitle(who.getString(R.string.load_dict));
 		progress_observer.replaceMessage(who.getString(R.string.load_dict_start));

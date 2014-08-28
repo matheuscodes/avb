@@ -32,7 +32,7 @@ public class BabelTower {
 	public static final String CONFIG_PATH = "config";
 
 	private static BabelTower reference = null;
-	private static Wordnet dictionary = null;
+	private static WordnetImporter dictionary = null;
 
 	private static ImageGetter flags = null;
 

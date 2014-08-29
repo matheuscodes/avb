@@ -3,6 +3,7 @@
 
     <string name="app_name">Arkanos Vocabulary Builder</string>
     <string name="app_name_short">Vocabulary Builder</string>
+    <!-- v [milestone].[incremental_version].[wordnet_Version] -->
     <string name="app_version">v0.0.3</string>
     
     <!-- Too Generic -->
@@ -30,13 +31,15 @@
         ]]>
     </string>
     
+    <!-- Stats Screen -->
+    <string name="stats_tab">Stats</string>
+    
+    <!-- Trial Screen -->
+    <string name="trial_next">Confirm and get next</string>
+    <string name="trial_dont_know">I don\'t know</string>
     
     <!-- Search Screen -->
     <string name="search_tab">Search</string>
-    
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
-    <string name="action_settings">Settings</string>
     
     <!-- Language Settings -->
     <string name="languages_tab">Languages</string>

@@ -120,4 +120,12 @@ public class Translation {
 		return results;
 	}
 
+	public String getKey() {
+		return key;
+	}
+
+	public String getTerm() {
+		return term;
+	}
+
 }

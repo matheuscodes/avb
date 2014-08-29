@@ -2,9 +2,12 @@ package org.arkanos.avb.activities;
 
 import org.arkanos.avb.R;
 import org.arkanos.avb.data.BabelTower;
+import org.arkanos.avb.data.Dictionary;
+import org.arkanos.avb.data.Sense;
 import org.arkanos.avb.data.WordnetImporter;
 import org.arkanos.avb.fragments.About;
 import org.arkanos.avb.fragments.LanguageSettings;
+import org.arkanos.avb.fragments.Stats;
 import org.arkanos.avb.ui.SearchBoxHelper;
 
 import android.app.ActionBar;
@@ -25,17 +28,19 @@ public class Main extends Activity implements ActionBar.TabListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// setContentView(R.layout.activity_main);//TODO delete the xml too
 
 		translations = BabelTower.prepareTranslations(this);
 
-		setContentView(R.layout.activity_main);
+		Sense s = Dictionary.getSense("n14013549");
+		s.getHead().replace('_', ' ');
 
 		// Set up the action bar.
 
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-		tabs = new Fragment[2];
+		tabs = new Fragment[3];
 
 		/** Begin **/
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -60,11 +65,21 @@ public class Main extends Activity implements ActionBar.TabListener {
 						.setText(R.string.languages_tab)
 						.setTabListener(this));
 
+		helper = new Stats();
+		ft.add(android.R.id.content, helper, "stats");
+		ft.detach(helper);
+		tabs[2] = helper;
+		actionBar.addTab(
+				actionBar
+						.newTab()
+						.setText(R.string.stats_tab)
+						.setTabListener(this));
+
 		if (savedInstanceState != null) {
-			actionBar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+			actionBar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 2));
 		}
 		else {
-			actionBar.setSelectedNavigationItem(0);
+			actionBar.setSelectedNavigationItem(2);
 			ft.attach(tabs[0]);
 		}
 

@@ -187,4 +187,11 @@ public class Sense implements Comparable<Sense> {
 		int second = s.calculateSort();
 		return first - second;
 	}
+
+	public String getHead() {
+		if (synonyms != null && synonyms.indexOf(' ') > 0) {
+			return synonyms.substring(0, synonyms.indexOf(' '));
+		}
+		return synonyms;
+	}
 }

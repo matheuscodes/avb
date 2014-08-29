@@ -236,9 +236,9 @@ public class BabelTower {
 	public static final int AVERAGE_KNOWN = 1;
 	public static final int WORST_KNOWN = 2;
 
-	public static Translation[][] getPartition(int size, String language) {
+	public static List<Translation> getPartition(int size, String language) {
 		Translation[][] results = new Translation[3][];
-
+		List<Translation> list = new LinkedList<Translation>();
 		Cursor c = db_read.rawQuery("SELECT"
 				+ " MAX(" + Translation.Fields.CONFIDENCE + "),"
 				+ " AVG(" + Translation.Fields.CONFIDENCE + "),"
@@ -267,9 +267,19 @@ public class BabelTower {
 			count = size - results[BEST_KNOWN].length - results[WORST_KNOWN].length;
 			results[AVERAGE_KNOWN] = selectPartition(count, language, c_avg - (c_avg - c_min) * 0.2f, (c_max - c_avg) * 0.2f + c_avg, t_min, t_max);
 
-		}
+			for (Translation t : results[BEST_KNOWN]) {
+				list.add(t);
+			}
 
-		return results;
+			for (Translation t : results[WORST_KNOWN]) {
+				list.add(t);
+			}
+
+			for (Translation t : results[AVERAGE_KNOWN]) {
+				list.add(t);
+			}
+		}
+		return list;
 	}
 
 	private static Translation[] selectPartition(int count, String language, float c_min, float c_max, float t_min, float t_max) {

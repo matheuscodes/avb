@@ -86,6 +86,7 @@ public class Sense {
 	}
 
 	public String getString(Fields field) {
+		// TODO remove this and make getters
 		switch (field) {
 		case SENSE:
 			return key;

@@ -90,7 +90,7 @@ public class Search extends ListActivity {
 				map.put("dict_glossary", format(s.getString(Sense.Fields.GLOSSARY), query));
 				String extras = "<i>" + getString(R.string.dict_synonyms) + ":</i> " + rest;
 				for (Map.Entry<String, Translation> t : s.getTranslations().entrySet()) {
-					extras += "<br/><br/><img src=\"" + t.getKey() + "\"/>  " + t.getValue().getContent();
+					extras += "<br/><br/><img src=\"" + t.getKey() + "\"/>  " + t.getValue().getSynonyms();
 				}
 				map.put("dict_extras", format(extras, query));
 				fillMaps.add(map);

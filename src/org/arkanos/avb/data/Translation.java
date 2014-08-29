@@ -26,14 +26,23 @@ public class Translation {
 	private String grammar_class;
 	private float trust;
 
+	public Translation(String key, String language) {
+		this.key = key;
+		this.language = language;
+	}
+
 	public Translation(Cursor c) {
 		// String debug = "";
 		key = c.getString(c.getColumnIndex(Fields.SENSE_KEY.toString()));
 		// debug += key + "/";
 		language = c.getString(c.getColumnIndex(Fields.LANGUAGE.toString()));
 		// debug += language + "/";
-		synonyms = c.getString(c.getColumnIndex(Fields.SYNONYMS.toString()));
-		// debug += synonyms;
+		term = c.getString(c.getColumnIndex(Fields.TERM.toString()));
+		// debug += term + "/";
+		grammar_class = c.getString(c.getColumnIndex(Fields.GRAMMAR_CLASS.toString()));
+		// debug += grammar_class + "/";
+		trust = c.getFloat(c.getColumnIndex(Fields.TRUST.toString()));
+		// debug += trust;
 		// Log.d("AVB-Translation", debug);
 	}
 
@@ -68,17 +77,16 @@ public class Translation {
 		return language;
 	}
 
-	public String getContent() {
-		// TODO what to do when it is term instead?
+	public void setSynonyms(String string) {
+		synonyms = string;
+	}
+
+	public String getSynonyms() {
 		return synonyms;
 	}
 
 	public void setTerm(String string) {
 		term = string;
-	}
-
-	public String getTerm() {
-		return term;
 	}
 
 }

@@ -192,8 +192,13 @@ public class BabelTower {
 					+ " MATCH '" + query + "';", null);
 			if (c.moveToFirst()) {
 				do {
-					Sense newone = Dictionary.getSense(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())));
-					newone.addTranslation(new Translation(c));
+					String key = c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString()));
+					Sense newone = Dictionary.getSense(key);
+					String list = c.getString(c.getColumnIndex(Translation.Fields.SYNONYMS.toString()));
+					String language = c.getString(c.getColumnIndex(Translation.Fields.LANGUAGE.toString()));
+					Translation t = new Translation(key, language);
+					t.setSynonyms(list);
+					newone.addTranslation(t);
 					results.add(newone);
 				} while (c.moveToNext());
 			}
@@ -207,15 +212,16 @@ public class BabelTower {
 	private static Translation getTranslation(String key, String language) {
 		try {
 			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE_TEXT + " WHERE "
-					+ Translation.Fields.SENSE_KEY + " MATCH '" + key + "';", null);
+					+ Translation.TABLE_TEXT + " MATCH '"
+					+ Translation.Fields.SENSE_KEY + ":" + key + " "
+					+ Translation.Fields.LANGUAGE + ":" + language + "';", null);
 			if (c.moveToFirst()) {
-				do {
-					Translation newone = new Translation(c);
-					if (c.getString(c.getColumnIndex(Translation.Fields.LANGUAGE.toString())).equals(language)) {
-						newone = new Translation(c);
-						return newone;
-					}
-				} while (c.moveToNext());
+				Translation newone = new Translation(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())), language);
+				newone.setSynonyms(c.getString(c.getColumnIndex(Translation.Fields.SYNONYMS.toString())));
+				if (c.moveToNext()) {
+					Log.e("AVB-BabelTower", "Danger Will Robinson! Danger! Multiple key language pair");
+				}
+				return newone;
 			}
 		} catch (SQLiteException e) {
 			// TODO auto
@@ -251,7 +257,7 @@ public class BabelTower {
 			float t_min = c.getFloat(5);
 
 			int count = size / 3;
-			results[BEST_KNOWN] = selectPartition(count, language, (c_max - c_avg) * 0.80f + c_avg, c_max, t_min, t_avg);
+			results[BEST_KNOWN] = selectPartition(count, language, (c_max - c_avg) * 0.80f + c_avg, c_max, t_avg, t_max);
 
 			count = (size - results[BEST_KNOWN].length) / 2;
 			results[WORST_KNOWN] = selectPartition(count, language, c_min, (c_avg - c_min) * 0.2f + c_min, t_avg, t_max);
@@ -280,8 +286,9 @@ public class BabelTower {
 			if (c.moveToFirst()) {
 				// Log.d("AVB-BabelTower", "Fetching done.");
 				do {
-					result[read] = BabelTower.getTranslation(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())), language);
-					result[read++].setTerm(c.getString(c.getColumnIndex(Translation.Fields.TERM.toString())));
+					// result[read] = BabelTower.getTranslation(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())), language);
+					// result[read++].setTerm(c.getString(c.getColumnIndex(Translation.Fields.TERM.toString())));
+					result[read++] = new Translation(c);
 				} while (c.moveToNext());
 				// Log.d("AVB-BabelTower", "Fetched " + read + ".");
 				if (result.length > count) {

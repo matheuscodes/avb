@@ -87,7 +87,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 							BabelTower.addTranslation(data, language);
 						}
 						String synonyms = reader.readLine();
-						BabelTower.addTranslation(key, synonyms, language);
+						BabelTower.addTranslation(key, synonyms.trim(), language);
 						--total;
 					}
 					publishProgress(Integer.valueOf(total), BATCH);

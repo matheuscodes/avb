@@ -2,10 +2,11 @@ package org.arkanos.avb.data;
 
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import android.database.Cursor;
 
-public class Sense {
+public class Sense implements Comparable<Sense> {
 	// TODO maybe remove unnecessary complexity
 	public enum GrammarClass {
 		ADVERB, VERB, ADJECTIVE, NOUN;
@@ -50,6 +51,8 @@ public class Sense {
 	GrammarClass grammar_class;
 	String antonyms;
 	int priority;
+
+	String sort_power;
 
 	HashMap<String, Translation> translations;
 
@@ -112,21 +115,8 @@ public class Sense {
 		return results;
 	}
 
-	public int sortValue(String query) {
-		int sort = 0;
-
-		// Head of the sense chain
-		if (synonyms.substring(0, query.length()).compareTo(query) == 0) {
-			sort += 10;
-		}
-
-		// int count = 0;
-		String processed = synonyms;
-		while (processed.contains(query)) {
-			// count++;// TODO finish
-		}
-
-		return sort;
+	public void setSortPower(String query) {
+		sort_power = query.replace(' ', '_').toLowerCase(Locale.getDefault());
 	}
 
 	public void addTranslation(Translation translation) {
@@ -135,5 +125,66 @@ public class Sense {
 
 	public HashMap<String, Translation> getTranslations() {
 		return translations;
+	}
+
+	public int calculateSort() {
+		if (this.sort_power == null) {
+			return 0;
+		}
+		int value = 0;
+		int size = sort_power.length();
+		String simple_syn = synonyms.toLowerCase(Locale.getDefault());
+
+		if (simple_syn.contains(sort_power)) {
+			if (sort_power.equals(simple_syn.substring(0, size))) {
+				// Log.d("AVB-Sense", "Query is head.");
+				value += 20;
+				if (simple_syn.length() >= size + 1 && simple_syn.substring(0, size + 1).equals(sort_power + " ")) {
+					// Log.d("AVB-Sense", "Query is head and full term.");
+					value += 10;
+				}
+				else {
+					if (simple_syn.length() == size) {
+						// Log.d("AVB-Sense", "Query is head and full term.");
+						value += 10;
+					}
+				}
+			}
+			else {
+				// Log.d("AVB-Sense", "Query is contained.");
+				value += 10;
+				if (simple_syn.contains(sort_power + " ")) {
+					// Log.d("AVB-Sense", "Query is contained in full term.");
+					value += 5;
+				}
+			}
+		}
+
+		for (Map.Entry<String, Translation> t : translations.entrySet()) {
+			String translation = t.getValue().getSynonyms();
+			if (translation.contains(sort_power)) {
+				if (translation.contains(sort_power + " ")) {
+					// Log.d("AVB-Sense", "Translation is contained.");
+					value += 5;
+				}
+				else {
+					// Log.d("AVB-Sense", "Translation is partial.");
+					value += 1;
+				}
+			}
+		}
+
+		if (glossary.contains(sort_power)) {
+			value += 1;
+		}
+
+		return value;
+	}
+
+	@Override
+	public int compareTo(Sense s) {
+		int first = this.calculateSort();
+		int second = s.calculateSort();
+		return first - second;
 	}
 }

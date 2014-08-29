@@ -59,6 +59,7 @@ public class Dictionary {
 			if (c.moveToFirst()) {
 				do {
 					Sense newone = new Sense(c);
+					newone.setSortPower(match);
 					results.add(newone);
 				} while (c.moveToNext());
 			}

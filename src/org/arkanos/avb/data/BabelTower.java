@@ -198,7 +198,9 @@ public class BabelTower {
 					String language = c.getString(c.getColumnIndex(Translation.Fields.LANGUAGE.toString()));
 					Translation t = new Translation(key, language);
 					t.setSynonyms(list);
+					t.cleanSynonyms(query);
 					newone.addTranslation(t);
+					newone.setSortPower(query);
 					results.add(newone);
 				} while (c.moveToNext());
 			}

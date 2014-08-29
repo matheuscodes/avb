@@ -1,5 +1,7 @@
 package org.arkanos.avb.data;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 
 import android.database.Cursor;
@@ -87,6 +89,35 @@ public class Translation {
 
 	public void setTerm(String string) {
 		term = string;
+	}
+
+	public void cleanSynonyms(String query) {
+		String newsynonyms = "";
+		String query_right = query.replace(' ', '_').toLowerCase(Locale.getDefault());
+		for (String s : breakToTerms(synonyms)) {
+			if (s.toLowerCase(Locale.getDefault()).contains(query_right)) {
+				newsynonyms += s;
+			}
+		}
+		setSynonyms(newsynonyms);
+		return;
+	}
+
+	private static List<String> breakToTerms(String s) {
+		List<String> results = new LinkedList<String>();
+		String processed = s.trim();
+		while (processed.length() > 0) {
+			if (processed.indexOf(' ') > 0) {
+				results.add(processed.substring(0, processed.indexOf(' ')));
+				processed = processed.substring(processed.indexOf(' ') + 1);
+			}
+			else {
+				results.add(processed);
+				processed = "";
+			}
+			processed = processed.trim();
+		}
+		return results;
 	}
 
 }

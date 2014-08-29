@@ -1,5 +1,6 @@
 package org.arkanos.avb.activities;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,6 +42,8 @@ public class Search extends ListActivity {
 
 		dictionary = Dictionary.loadWordnet(this);
 		translations = BabelTower.prepareTranslations(this);
+
+		handleIntent(getIntent());
 	}
 
 	@Override
@@ -52,7 +55,8 @@ public class Search extends ListActivity {
 		return true;
 	}
 
-	private void handleIntent(Intent intent) {
+	// TODO check if sync required
+	private synchronized void handleIntent(Intent intent) {
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 			String query = intent.getStringExtra(SearchManager.QUERY);
 			Log.d("AVB-Search", "Search request: " + query);
@@ -63,7 +67,7 @@ public class Search extends ListActivity {
 
 			List<Sense> ls = null;
 			// FIXME This optimization makes double call not so heavy, but it still shouldn't happen.
-			if (last_query != null && last_query.compareTo(query) == 0) {
+			if (last_results != null && last_query != null && last_query.compareTo(query) == 0) {
 				ls = last_results;
 			}
 			else {
@@ -71,9 +75,11 @@ public class Search extends ListActivity {
 				ls.addAll(BabelTower.searchTranslations(query));
 				if (ls != null) {
 					last_query = query;
+					Collections.sort(ls, Collections.reverseOrder());
 					last_results = ls;
 				}
 			}
+
 			Log.d("AVB-Search", "Query executed...");
 			// TODO optimize me please... use 75% of the entire time.
 			List<HashMap<String, Spanned>> fillMaps = new LinkedList<HashMap<String, Spanned>>();

@@ -41,7 +41,7 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 
 	@Override
 	protected Void doInBackground(Void... v) {
-		synchronized (this) {
+		synchronized (this) { // TODO remove this
 			progress_observer.defineEnd(WN_TOTAL);
 			progress_observer.defineStep(0);
 			// TODO add a resume feature

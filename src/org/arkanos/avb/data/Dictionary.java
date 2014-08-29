@@ -34,8 +34,7 @@ public class Dictionary {
 				return c.getInt(0);
 			}
 		} catch (SQLiteException e) {
-			// TODO auto
-			e.printStackTrace();
+			Log.e("AVB-Dictionary", e.toString());
 		}
 		return -1;
 	}
@@ -45,8 +44,7 @@ public class Dictionary {
 			db_write.insert(Sense.TABLE, null, data);
 			db_write.insert(Sense.TABLE_TEXT, null, text);
 		} catch (SQLiteException e) {
-			// TODO auto
-			e.printStackTrace();
+			Log.e("AVB-Dictionary", e.toString());
 		}
 	}
 
@@ -64,8 +62,7 @@ public class Dictionary {
 				} while (c.moveToNext());
 			}
 		} catch (SQLiteException e) {
-			// TODO auto
-			e.printStackTrace();
+			Log.e("AVB-Dictionary", e.toString());
 		}
 		return results;
 	}
@@ -101,19 +98,20 @@ public class Dictionary {
 
 	public static Sense getSense(String key) {
 		try {
+			// Log.d("AVB-Dictionary", "Search sense key " + key);
 			Cursor c = db_read.rawQuery("SELECT * FROM " + Sense.TABLE_TEXT
 					+ " WHERE " + Sense.Fields.SENSE
 					+ " MATCH '" + key + "';", null);
 			if (c.moveToFirst()) {
 				Sense newone = new Sense(c);
+				// Log.d("AVB-Dictionary", "Found " + newone.getHead());
 				if (c.moveToNext()) {
 					Log.e("AVB-Dictionary", "Danger Will Robinson! Danger! Duplicated sense key.");
 				}
 				return newone;
 			}
 		} catch (SQLiteException e) {
-			// TODO auto
-			e.printStackTrace();
+			Log.e("AVB-Dictionary", e.toString());
 		}
 		return null;
 	}

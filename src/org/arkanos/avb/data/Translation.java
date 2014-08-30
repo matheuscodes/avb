@@ -96,10 +96,10 @@ public class Translation {
 		String query_right = query.replace(' ', '_').toLowerCase(Locale.getDefault());
 		for (String s : breakToTerms(synonyms)) {
 			if (s.toLowerCase(Locale.getDefault()).contains(query_right)) {
-				newsynonyms += s;
+				newsynonyms += s + " ";
 			}
 		}
-		setSynonyms(newsynonyms);
+		setSynonyms(newsynonyms.trim());
 		return;
 	}
 

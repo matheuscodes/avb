@@ -9,6 +9,7 @@ import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.Dictionary;
 import org.arkanos.avb.data.Sense;
 import org.arkanos.avb.data.Translation;
+import org.arkanos.avb.ui.DictionaryEntryHelper;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -21,7 +22,6 @@ import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 public class Trial extends Activity {
 
@@ -79,17 +79,9 @@ public class Trial extends Activity {
 		content.removeAllViews();
 		getLayoutInflater().inflate(R.layout.trial_multiple, content);
 
-		TextView text;
 		Sense s = Dictionary.getSense(t.getKey());
 		getLayoutInflater().inflate(R.layout.dictionary_entry, (RelativeLayout) this.findViewById(R.id.trial_entry));
-		text = (TextView) content.findViewById(R.id.dict_word);
-		text.setText(s.getHead().replace('_', ' '));
-		text = (TextView) content.findViewById(R.id.dict_glossary);
-		text.setText(s.getString(Sense.Fields.GLOSSARY));
-		text = (TextView) content.findViewById(R.id.dict_class);
-		text.setText(s.getString(Sense.Fields.GRAMMAR_CLASS));
-		text = (TextView) content.findViewById(R.id.dict_extras);
-		text.setText(this.getString(R.string.dict_synonyms) + ": " + s.getString(Sense.Fields.SYNONYMS).replace(" ", ", ").replace('_', ' '));
+		DictionaryEntryHelper.fillEntry(content, s);
 
 		List<Translation> alternatives = others.get(t);
 

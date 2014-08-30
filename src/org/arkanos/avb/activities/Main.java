@@ -2,8 +2,6 @@ package org.arkanos.avb.activities;
 
 import org.arkanos.avb.R;
 import org.arkanos.avb.data.BabelTower;
-import org.arkanos.avb.data.Dictionary;
-import org.arkanos.avb.data.Sense;
 import org.arkanos.avb.data.WordnetImporter;
 import org.arkanos.avb.fragments.About;
 import org.arkanos.avb.fragments.LanguageSettings;
@@ -15,6 +13,7 @@ import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 
@@ -32,8 +31,10 @@ public class Main extends Activity implements ActionBar.TabListener {
 
 		translations = BabelTower.prepareTranslations(this);
 
-		Sense s = Dictionary.getSense("n14013549");
-		s.getHead().replace('_', ' ');
+		Intent intent = new Intent(this, Change.class);
+		intent.putExtra("language", "sv");
+		intent.putExtra("key", "v02588280");
+		startActivity(intent);
 
 		// Set up the action bar.
 

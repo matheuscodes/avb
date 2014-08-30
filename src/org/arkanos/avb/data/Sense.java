@@ -194,4 +194,8 @@ public class Sense implements Comparable<Sense> {
 		}
 		return synonyms;
 	}
+
+	public String getKey() {
+		return key;
+	}
 }

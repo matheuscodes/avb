@@ -211,30 +211,9 @@ public class BabelTower {
 		return results;
 	}
 
-	private static Translation getTranslation(String key, String language) {
-		try {
-			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE_TEXT + " WHERE "
-					+ Translation.TABLE_TEXT + " MATCH '"
-					+ Translation.Fields.SENSE_KEY + ":" + key + " "
-					+ Translation.Fields.LANGUAGE + ":" + language + "';", null);
-			if (c.moveToFirst()) {
-				Translation newone = new Translation(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())), language);
-				newone.setSynonyms(c.getString(c.getColumnIndex(Translation.Fields.SYNONYMS.toString())));
-				if (c.moveToNext()) {
-					Log.e("AVB-BabelTower", "Danger Will Robinson! Danger! Multiple key language pair");
-				}
-				return newone;
-			}
-		} catch (SQLiteException e) {
-			// TODO auto
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	public static final int BEST_KNOWN = 0;
-	public static final int AVERAGE_KNOWN = 1;
-	public static final int WORST_KNOWN = 2;
+	private static final int BEST_KNOWN = 0;
+	private static final int AVERAGE_KNOWN = 1;
+	private static final int WORST_KNOWN = 2;
 
 	public static List<Translation> getPartition(int size, String language) {
 		Translation[][] results = new Translation[3][];
@@ -321,5 +300,24 @@ public class BabelTower {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public static List<Translation> getTranslations(String key, String language) {
+		List<Translation> results = new LinkedList<Translation>();
+
+		try {
+			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE
+					+ " WHERE " + Translation.Fields.SENSE_KEY + " = '" + key + "'"
+					+ " AND " + Translation.Fields.LANGUAGE + " = '" + language + "';", null);
+			if (c.moveToFirst()) {
+				do {
+					results.add(new Translation(c));
+				} while (c.moveToNext());
+			}
+		} catch (SQLiteException e) {
+			// TODO auto
+			e.printStackTrace();
+		}
+		return results;
 	}
 }

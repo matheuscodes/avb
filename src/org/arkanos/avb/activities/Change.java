@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.RelativeLayout;
 import android.widget.TableLayout;
@@ -30,6 +31,7 @@ public class Change extends Activity {
 
 	List<Translation> remove = null;
 	List<Translation> confirm = null;
+	List<Translation> insert = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +40,29 @@ public class Change extends Activity {
 
 		remove = new LinkedList<Translation>();
 		confirm = new LinkedList<Translation>();
+		insert = new LinkedList<Translation>();
 
 		// BabelTower.prepareTranslations(this); // TODO remove this or do more elegantly
+
+		// TODO WTF, why can't this be on onCreate?
+		Button save = (Button) findViewById(R.id.change_execute);
+		save.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Log.d("AVB-Change", "Clicking...");
+				for (Translation t : insert) {
+					BabelTower.addTranslation(t);
+				}
+				for (Translation t : remove) {
+					BabelTower.deleteTranslation(t);
+				}
+				for (Translation t : confirm) {
+					t.increaseTrust(1f); // TODO reference in a constant somewhere
+					BabelTower.saveTranslationTrust(t);
+				}
+				finish();
+			}
+		});
 
 		Intent intent = getIntent();
 		if (intent != null) {
@@ -57,18 +80,30 @@ public class Change extends Activity {
 	}
 
 	private void handleIntent(Intent intent) {
-		String language = intent.getStringExtra(LANGUAGE);
-		String sense_key = intent.getStringExtra(KEY);
+		final String language = intent.getStringExtra(LANGUAGE);
+		final String sense_key = intent.getStringExtra(KEY);
+		String title = this.getResources().getString(R.string.change_title);
 		Sense sense = Dictionary.getSense(sense_key);
+
+		title = title.replace("{language}", BabelTower.prettyName(language, this));
+
 		if (sense != null) {
+			title = title.replace("{word}", sense.getHead());
+			this.setTitle(title);
+
 			List<Translation> lt = BabelTower.getTranslations(sense.getKey(), language);
+
 			getLayoutInflater().inflate(R.layout.dictionary_entry, (RelativeLayout) this.findViewById(R.id.change_entry));
 			DictionaryEntryHelper.fillEntry(this.findViewById(R.id.change_entry), sense);
-			TableLayout list = (TableLayout) this.findViewById(R.id.change_content);
-			LayoutParams fill = new TableLayout.LayoutParams(
+
+			final TableLayout list = (TableLayout) this.findViewById(R.id.change_content);
+			final LayoutParams fill = new TableLayout.LayoutParams(
 					TableLayout.LayoutParams.MATCH_PARENT,
 					TableLayout.LayoutParams.WRAP_CONTENT,
 					1.0f);
+
+			final int button_height = (int) (getResources().getDisplayMetrics().density * 40 + 0.5f);
+
 			for (Translation t : lt) {
 				final TableRow tr = new TableRow(this);
 
@@ -79,16 +114,14 @@ public class Change extends Activity {
 						TableRow.LayoutParams.WRAP_CONTENT,
 						1.0f));
 
-				int height = (int) (getResources().getDisplayMetrics().density * 40 + 0.5f);
-
 				final Translation item = t;
 
 				final Button remove_button = new Button(this, null, android.R.attr.buttonStyleSmall);
 				final Button confirm_button = new Button(this, null, android.R.attr.buttonStyleSmall);
 
-				remove_button.setText(this.getString(R.string.change_confirm));
-				remove_button.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, height));
-				remove_button.setOnClickListener(new OnClickListener() {
+				confirm_button.setText(this.getString(R.string.change_confirm));
+				confirm_button.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, button_height));
+				confirm_button.setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View v) {
 						tr.removeView(confirm_button);
@@ -97,11 +130,16 @@ public class Change extends Activity {
 						confirm.add(item);
 					}
 				});
-				tr.addView(remove_button);
+				if (item.getTrust() < 1f) {// TODO reference in a constant somewhere
+					tr.addView(confirm_button);
+				}
+				else {
+					tv.setTextColor(getResources().getColor(R.color.change_confirmed));
+				}
 
-				confirm_button.setText(this.getString(R.string.change_remove));
-				confirm_button.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, height));
-				confirm_button.setOnClickListener(new OnClickListener() {
+				remove_button.setText(this.getString(R.string.change_remove));
+				remove_button.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, button_height));
+				remove_button.setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View v) {
 						tr.removeView(confirm_button);
@@ -110,10 +148,60 @@ public class Change extends Activity {
 						remove.add(item);
 					}
 				});
-				tr.addView(confirm_button);
+				tr.addView(remove_button);
 
 				list.addView(tr, fill);
 			}
+
+			final TableRow new_row = new TableRow(this);
+
+			Button new_button = new Button(this, null, android.R.attr.buttonStyleSmall);
+			new_button.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, button_height));
+			new_row.addView(new_button, new TableRow.LayoutParams(
+					TableRow.LayoutParams.MATCH_PARENT,
+					TableRow.LayoutParams.WRAP_CONTENT,
+					1.0f));
+			new_button.setText(R.string.change_new);
+			new_button.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					list.removeView(new_row);
+					final TableRow extra_row = new TableRow(v.getContext());
+
+					final EditText new_term = new EditText(v.getContext());
+					extra_row.addView(new_term, new TableRow.LayoutParams(
+							TableRow.LayoutParams.MATCH_PARENT,
+							TableRow.LayoutParams.WRAP_CONTENT,
+							1.0f));
+
+					Button add = new Button(v.getContext(), null, android.R.attr.buttonStyleSmall);
+					add.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, button_height));
+					add.setText(R.string.change_add);
+					add.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							extra_row.removeAllViews();
+
+							String text = new_term.getText().toString();
+							Translation new_one = new Translation(sense_key, language);
+							new_one.setTerm(text.trim().replace(' ', '_'));
+							new_one.setTrust(1f);
+							insert.add(new_one);
+
+							TextView added = new TextView(v.getContext());
+							added.setText(text);
+							added.setTextColor(getResources().getColor(R.color.change_confirmed));
+							extra_row.addView(added);
+						}
+					});
+					extra_row.addView(add);
+
+					list.addView(extra_row, fill);
+					list.addView(new_row, fill);
+				}
+			});
+
+			list.addView(new_row, fill);
 		}
 	}
 }

@@ -28,6 +28,11 @@ public class Translation {
 	private String grammar_class;
 	private float trust;
 
+	@Override
+	public String toString() {
+		return language + "/" + key + "/" + synonyms + "/" + term + "/" + grammar_class + "/" + trust;
+	}
+
 	public Translation(String key, String language) {
 		this.key = key;
 		this.language = language;
@@ -126,6 +131,22 @@ public class Translation {
 
 	public String getTerm() {
 		return term;
+	}
+
+	public float getTrust() {
+		return trust;
+	}
+
+	public void setTrust(float value) {
+		trust = value;
+	}
+
+	public void increaseTrust(float value) {
+		trust += value;
+	}
+
+	public String getGrammar() {
+		return grammar_class;
 	}
 
 }

@@ -32,9 +32,12 @@
     </string>
     
     <!-- Change Screen -->
+    <string name="change_title">{word} in {language}</string>
     <string name="change_confirm">Confirm</string>
     <string name="change_remove">Remove</string>
     <string name="change_save">Save Changes</string>
+    <string name="change_new">Add new term</string>
+    <string name="change_add">Add</string>
     
     <!-- Stats Screen -->
     <string name="stats_tab">Stats</string>

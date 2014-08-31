@@ -320,4 +320,109 @@ public class BabelTower {
 		}
 		return results;
 	}
+
+	public static void deleteTranslation(Translation t) {
+		String sql_table = "DELETE FROM " + Translation.TABLE
+				+ " WHERE " + Translation.Fields.SENSE_KEY + " = '" + t.getKey() + "'"
+				+ " AND " + Translation.Fields.LANGUAGE + " = '" + t.getLanguage() + "'"
+				+ " AND " + Translation.Fields.TERM + " = '" + t.getTerm() + "';";
+		String clean;
+		// TODO maybe move this code to Translation
+		if (t.getSynonyms() == null) {
+			clean = getTranslationSynonyms(t.getKey(), t.getLanguage()).trim();
+		}
+		else {
+			clean = t.getSynonyms();
+		}
+		clean = clean.replace(t.getTerm(), "").replace("  ", " ");
+		t.setSynonyms(clean);
+		String sql_text;
+		if (t.getSynonyms().length() > 0) {
+			sql_text = "UPDATE " + Translation.TABLE_TEXT
+					+ " SET " + Translation.Fields.SYNONYMS + " = '" + t.getSynonyms() + "'"
+					+ " WHERE " + Translation.TABLE_TEXT + " MATCH '"
+					+ Translation.Fields.SENSE_KEY + ":" + t.getKey() + " "
+					+ Translation.Fields.LANGUAGE + ":" + t.getLanguage() + "';";
+		}
+		else {
+			sql_text = "DELETE FROM " + Translation.TABLE_TEXT
+					+ " WHERE " + Translation.TABLE_TEXT + " MATCH '"
+					+ Translation.Fields.SENSE_KEY + ":" + t.getKey() + " "
+					+ Translation.Fields.LANGUAGE + ":" + t.getLanguage() + "';";
+		}
+
+		try {
+			db_write.execSQL(sql_table);
+			db_write.execSQL(sql_text);
+		} catch (SQLiteException e) {
+			Log.e("AVB-BabelTower", e.toString());
+		}
+	}
+
+	private static String getTranslationSynonyms(String key, String language) {
+		String result = null;
+		try {
+			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE_TEXT
+					+ " WHERE " + Translation.TABLE_TEXT + " MATCH '"
+					+ Translation.Fields.SENSE_KEY + ":" + key + " "
+					+ Translation.Fields.LANGUAGE + ":" + language + "';", null);
+			if (c.moveToFirst()) {
+				result = c.getString(c.getColumnIndex(Translation.Fields.SYNONYMS.toString()));
+
+				if (c.moveToNext()) {
+					Log.e("AVB-BabelTower", "Danger Will Robinson! Danger! Duplicate language and key.");
+				}
+			}
+		} catch (SQLiteException e) {
+			Log.e("AVB-BabelTower", e.toString());
+		}
+		return result;
+	}
+
+	public static void addTranslation(Translation t) {
+		ContentValues map = new ContentValues();
+		map.put(Translation.Fields.SENSE_KEY.toString(), t.getKey());
+		map.put(Translation.Fields.TERM.toString(), t.getTerm());
+		map.put(Translation.Fields.TRUST.toString(), t.getTrust());
+		if (t.getGrammar() != null) {
+			map.put(Translation.Fields.GRAMMAR_CLASS.toString(), t.getGrammar());
+		}
+		addTranslation(map, t.getLanguage());
+
+		String synonyms = getTranslationSynonyms(t.getKey(), t.getLanguage());
+		// TODO maybe move this logic to Translation
+		if (synonyms != null) {
+			synonyms += " " + t.getTerm();
+			synonyms.replace("  ", " ");
+			String sql_text = "UPDATE " + Translation.TABLE_TEXT
+					+ " SET " + Translation.Fields.SYNONYMS + " = '" + synonyms + "'"
+					+ " WHERE " + Translation.TABLE_TEXT + " MATCH '"
+					+ Translation.Fields.SENSE_KEY + ":" + t.getKey() + " "
+					+ Translation.Fields.LANGUAGE + ":" + t.getLanguage() + "';";
+			try {
+				db_write.execSQL(sql_text);
+			} catch (SQLiteException e) {
+				Log.e("AVB-BabelTower", e.toString());
+			}
+		}
+		else {
+			synonyms = t.getTerm();
+			addTranslation(t.getKey(), synonyms, t.getLanguage());
+		}
+
+	}
+
+	public static void saveTranslationTrust(Translation t) {
+		String sql = "UPDATE " + Translation.TABLE
+				+ " SET " + Translation.Fields.TRUST + " = " + t.getTrust()
+				+ " WHERE " + Translation.Fields.LANGUAGE + " = '" + t.getLanguage() + "'"
+				+ " AND " + Translation.Fields.SENSE_KEY + " = '" + t.getKey() + "'"
+				+ " AND " + Translation.Fields.TERM + " = '" + t.getTerm() + "';";
+
+		try {
+			db_write.execSQL(sql);
+		} catch (SQLiteException e) {
+			Log.e("AVB-BabelTower", e.toString());
+		}
+	}
 }

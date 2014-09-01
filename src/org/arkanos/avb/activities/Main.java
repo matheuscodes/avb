@@ -4,7 +4,7 @@ import org.arkanos.avb.R;
 import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.WordnetImporter;
 import org.arkanos.avb.fragments.About;
-import org.arkanos.avb.fragments.LanguageSettings;
+import org.arkanos.avb.fragments.Languages;
 import org.arkanos.avb.fragments.Stats;
 import org.arkanos.avb.ui.SearchBoxHelper;
 
@@ -56,7 +56,7 @@ public class Main extends Activity implements ActionBar.TabListener {
 						.setText(R.string.about_tab)
 						.setTabListener(this));
 
-		helper = new LanguageSettings();
+		helper = new Languages();
 		ft.add(android.R.id.content, helper, "languages");
 		ft.detach(helper);
 		tabs[1] = helper;

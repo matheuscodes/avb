@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.arkanos.avb.R;
-import org.arkanos.avb.data.BabelTower;
+import org.arkanos.avb.data.LanguageSettings;
 import org.arkanos.avb.data.Sense;
 import org.arkanos.avb.data.Translation;
 
@@ -89,6 +89,6 @@ public class DictionaryEntryHelper {
 				.replace(" \"", " <i>\"")
 				.replace("\" ", "\"</i> ")
 				.replace(";", "<br/>")
-				.replace(query, "<u>" + query + "</u>"), BabelTower.getFlags(where), null);
+				.replace(query, "<u>" + query + "</u>"), LanguageSettings.getFlags(where), null);
 	}
 }

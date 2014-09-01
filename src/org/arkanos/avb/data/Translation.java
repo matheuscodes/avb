@@ -11,14 +11,13 @@ public class Translation {
 	public static final String TABLE = "translations";
 	public static final String TABLE_TEXT = "translations_text";
 
-	public enum Fields {
-		SENSE_KEY, SYNONYMS, TERM, GRAMMAR_CLASS, TRUST, CONFIDENCE, LANGUAGE;
-
-		@Override
-		public String toString() {
-			return this.name().toLowerCase(Locale.getDefault());
-		}
-	};
+	public static final String SENSE_KEY = "sense_key";
+	public static final String SYNONYMS = "synonyms";
+	public static final String TERM = "term";
+	public static final String GRAMMAR = "grammar";
+	public static final String TRUST = "trust";
+	public static final String CONFIDENCE = "confidence";
+	public static final String LANGUAGE = "language";
 
 	private String language;
 	// TODO defaults
@@ -38,46 +37,41 @@ public class Translation {
 		this.language = language;
 	}
 
-	public Translation(Cursor c) {
+	public Translation(Cursor c, String language) {
 		// String debug = "";
-		key = c.getString(c.getColumnIndex(Fields.SENSE_KEY.toString()));
+		this.key = c.getString(c.getColumnIndex(SENSE_KEY));
 		// debug += key + "/";
-		language = c.getString(c.getColumnIndex(Fields.LANGUAGE.toString()));
+		this.language = language;
 		// debug += language + "/";
-		term = c.getString(c.getColumnIndex(Fields.TERM.toString()));
+		this.term = c.getString(c.getColumnIndex(TERM));
 		// debug += term + "/";
-		grammar_class = c.getString(c.getColumnIndex(Fields.GRAMMAR_CLASS.toString()));
+		this.grammar_class = c.getString(c.getColumnIndex(GRAMMAR));
 		// debug += grammar_class + "/";
-		trust = c.getFloat(c.getColumnIndex(Fields.TRUST.toString()));
+		this.trust = c.getFloat(c.getColumnIndex(TRUST));
 		// debug += trust;
 		// Log.d("AVB-Translation", debug);
 	}
 
-	public static String[] createSQLTables() {
-		String[] results = new String[2];
-		// TODO add foreign key
-		results[0] = "CREATE TABLE " + Translation.TABLE + " ("
-				+ Translation.Fields.SENSE_KEY + " TEXT,"
-				+ Translation.Fields.LANGUAGE + " TEXT,"
-				+ Translation.Fields.TERM + " TEXT,"
-				+ Translation.Fields.GRAMMAR_CLASS + " TEXT,"
-				+ Translation.Fields.CONFIDENCE + "  REAL NOT NULL DEFAULT 0,"
-				+ Translation.Fields.TRUST + " REAL NOT NULL DEFAULT 0, "
-				+ "PRIMARY KEY ("
-				+ Translation.Fields.SENSE_KEY + ","
-				+ Translation.Fields.LANGUAGE + ","
-				+ Translation.Fields.TERM
-				+ "));";
-		results[1] = "CREATE VIRTUAL TABLE " + Translation.TABLE_TEXT + " USING fts4("
-				+ Translation.Fields.SENSE_KEY + "," + Translation.Fields.SYNONYMS + "," + Translation.Fields.LANGUAGE + ");";
-		return results;
+	public static String createSQLTable() {
+		return "CREATE VIRTUAL TABLE " + Translation.TABLE_TEXT + " USING fts4("
+				+ Translation.SENSE_KEY + "," + Translation.SYNONYMS + "," + Translation.LANGUAGE + ");";
 	}
 
-	public static String[] purgetSQLTables() {
-		String[] results = new String[2];
-		results[0] = "DROP TABLE IF EXISTS " + Translation.TABLE + ";";
-		results[1] = "DROP TABLE IF EXISTS " + Translation.TABLE_TEXT + ";";
-		return results;
+	public static String createSQLTable(String language) {
+		return "CREATE TABLE " + Translation.TABLE + "_" + language + " ("
+				+ Translation.SENSE_KEY + " TEXT,"
+				+ Translation.TERM + " TEXT,"
+				+ Translation.GRAMMAR + " TEXT,"
+				+ Translation.CONFIDENCE + "  REAL NOT NULL DEFAULT 0,"
+				+ Translation.TRUST + " REAL NOT NULL DEFAULT 0, "
+				+ "PRIMARY KEY ("
+				+ Translation.SENSE_KEY + ","
+				+ Translation.TERM
+				+ "));";
+	}
+
+	public static String purgetSQLTable() {
+		return "DROP TABLE IF EXISTS " + Translation.TABLE_TEXT + ";";
 	}
 
 	public String getLanguage() {
@@ -89,7 +83,11 @@ public class Translation {
 	}
 
 	public String getSynonyms() {
-		return synonyms;
+		// TODO maybe rename to "getPretty" because of the set (which expects data-data)
+		if (synonyms != null) {
+			return synonyms.replace(" ", ", ").replace('_', ' ');
+		}
+		return null;
 	}
 
 	public void setTerm(String string) {

@@ -64,12 +64,13 @@
     <string name="sv_utrum">utrum</string>
     <string name="sv_plural">plural</string>
     
-    <string name="load_translation">Loading data for {language}</string>
+    <string name="load_translation">Installing {language}</string>
     <string name="load_translation_text">{count} senses left.</string>
     <string name="load_translation_start">Loading will commence shortly.</string>
     <string name="load_translation_wait">Waiting for update.</string>
     <string name="load_translation_clean">Cleaning the database.</string>
-    
+    <string name="unload_translation">Uninstalling {language}</string>
+    <string name="unload_translation_text">Please be patient.</string>
     
     <!-- Loading Dictionary strings -->
 	<string name="load_dict">Loading Dictionary</string>

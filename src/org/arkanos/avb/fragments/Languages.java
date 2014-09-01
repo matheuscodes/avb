@@ -3,7 +3,6 @@ package org.arkanos.avb.fragments;
 import java.util.HashMap;
 
 import org.arkanos.avb.R;
-import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.LanguageSettings;
 
 import android.app.Fragment;
@@ -28,10 +27,10 @@ public class Languages extends Fragment {
 		final View rootView = inflater.inflate(R.layout.languages_selection, container, false);
 
 		/** SV **/
-		configureCheckbox(rootView, R.id.use_sv, states, BabelTower.SWEDISH);
+		configureCheckbox(rootView, R.id.use_sv, states, LanguageSettings.SWEDISH);
 
 		/** DE **/
-		configureCheckbox(rootView, R.id.use_de, states, BabelTower.GERMAN);
+		configureCheckbox(rootView, R.id.use_de, states, LanguageSettings.GERMAN);
 
 		return rootView;
 	}
@@ -56,7 +55,7 @@ public class Languages extends Fragment {
 			LanguageSettings.installLanguage(language, cb.getContext());
 		}
 		else {
-			LanguageSettings.removeLanguage(language);
+			LanguageSettings.removeLanguage(language, cb.getContext());
 			// TODO confirm dialog
 		}
 	}

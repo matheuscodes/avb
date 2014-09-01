@@ -192,7 +192,10 @@ public class Sense implements Comparable<Sense> {
 		if (synonyms != null && synonyms.indexOf(' ') > 0) {
 			return synonyms.substring(0, synonyms.indexOf(' ')).replace(" ", ", ").replace('_', ' ');
 		}
-		return synonyms;
+		else if (synonyms != null) {
+			return synonyms.replace(" ", ", ").replace('_', ' ');
+		}
+		return null;
 	}
 
 	public String getKey() {

@@ -7,6 +7,7 @@ import java.util.List;
 import org.arkanos.avb.R;
 import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.Dictionary;
+import org.arkanos.avb.data.LanguageSettings;
 import org.arkanos.avb.data.Sense;
 import org.arkanos.avb.data.Translation;
 import org.arkanos.avb.ui.DictionaryEntryHelper;
@@ -42,7 +43,7 @@ public class Trial extends Activity {
 
 		// TODO nothing when there aren't enough items for 1 game and alternatives
 		Log.d("AVB-Trial", "Getting partition...");
-		List<Translation> partition = BabelTower.getPartition(PARTITION, BabelTower.GERMAN);
+		List<Translation> partition = BabelTower.getPartition(PARTITION, LanguageSettings.GERMAN);
 		Log.d("AVB-Trial", "Got partition of size " + partition.size());
 
 		others = new HashMap<Translation, List<Translation>>();
@@ -87,6 +88,10 @@ public class Trial extends Activity {
 					}
 				}
 
+			}
+			/* Recovering the discarded */
+			for (Translation discarded : bin) {
+				partition.add(discarded);
 			}
 			others.put(t, lt);
 		}

@@ -41,7 +41,6 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 		dialog.startIt();
 		// FIXME the dialog does not appear while cleaning.
 		BabelTower.clean(language);
-		dialog.replaceTitle(title);
 		dialog.replaceMessage(message);
 	}
 
@@ -51,6 +50,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 		if (i.length > 1) {
 			dialog.increaseBy(i[1].intValue());
 		}
+		// TODO Set message when optimizing.
 	}
 
 	@Override
@@ -61,6 +61,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 		synchronized (dialog) {
 			message = parent.getString(R.string.load_translation_text);
 			try {
+				BabelTower.prepare(language);
 				AssetManager am = parent.getAssets();
 				InputStream in = am.open(FILE_NAME + language);
 				BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -79,11 +80,11 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 							float trust = Float.parseFloat(reader.readLine());
 
 							if (gclass != null && gclass.length() > 0) {
-								data.put(Translation.Fields.GRAMMAR_CLASS.toString(), language + "_" + gclass);
+								data.put(Translation.GRAMMAR, language + "_" + gclass);
 							}
-							data.put(Translation.Fields.SENSE_KEY.toString(), key);
-							data.put(Translation.Fields.TRUST.toString(), trust);
-							data.put(Translation.Fields.TERM.toString(), translation);
+							data.put(Translation.SENSE_KEY, key);
+							data.put(Translation.TRUST, trust);
+							data.put(Translation.TERM, translation);
 							BabelTower.addTranslation(data, language);
 						}
 						String synonyms = reader.readLine();
@@ -92,7 +93,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 					}
 					publishProgress(Integer.valueOf(total), BATCH);
 				}
-				BabelTower.optimize(); // TODO tell the user
+				BabelTower.optimize(language); // TODO tell the user
 				reader.close();
 			} catch (IOException e) {
 				Log.e("AVB-TranslationImporter", e.toString());

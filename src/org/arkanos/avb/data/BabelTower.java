@@ -12,8 +12,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.graphics.drawable.Drawable;
-import android.text.Html.ImageGetter;
 import android.util.Log;
 
 public class BabelTower {
@@ -26,37 +24,11 @@ public class BabelTower {
 	private static final int NOUN_CLASS = 0;
 	private static final int NOUN_DESCRIPTION = 1;
 
-	public static final String GERMAN = "de";
-	public static final String SWEDISH = "sv";
-
 	private static HashMap<String, String[]> languages_configuration;
 
 	public static final String CONFIG_PATH = "config";
 
-	private static ImageGetter flags = null;
-
 	// TODO optimization: one table per language +faster drop +table size
-
-	// TODO see if sync is needed
-	public static synchronized ImageGetter getFlags(final Context c) {
-		if (flags == null) {
-			flags = new ImageGetter() {
-				public Drawable getDrawable(String source) {
-					Drawable d = c.getResources().getDrawable(R.drawable.flag_usgb);
-
-					if (source.equals(SWEDISH))
-						d = c.getResources().getDrawable(R.drawable.flag_sv);
-
-					if (source.equals(GERMAN))
-						d = c.getResources().getDrawable(R.drawable.flag_de);
-
-					d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
-					return d;
-				}
-			};
-		}
-		return flags;
-	}
 
 	private static void loadConfigs(Context c) {
 		languages_configuration = new HashMap<String, String[]>();
@@ -66,38 +38,38 @@ public class BabelTower {
 		helper = new String[2];
 		helper[NOUN_CLASS] = "Femininum";
 		helper[NOUN_DESCRIPTION] = c.getString(R.string.de_femininum);
-		languages_configuration.put(GERMAN + "_f", helper);
+		languages_configuration.put(LanguageSettings.GERMAN + "_f", helper);
 
 		helper = new String[2];
 		helper[NOUN_CLASS] = "Maskulinum";
 		helper[NOUN_DESCRIPTION] = c.getString(R.string.de_maskulinum);
-		languages_configuration.put(GERMAN + "_m", helper);
+		languages_configuration.put(LanguageSettings.GERMAN + "_m", helper);
 
 		helper = new String[2];
 		helper[NOUN_CLASS] = "Neutrum";
 		helper[NOUN_DESCRIPTION] = c.getString(R.string.de_neutrum);
-		languages_configuration.put(GERMAN + "_n", helper);
+		languages_configuration.put(LanguageSettings.GERMAN + "_n", helper);
 
 		helper = new String[2];
 		helper[NOUN_CLASS] = "Plural";
 		helper[NOUN_DESCRIPTION] = c.getString(R.string.de_plural);
-		languages_configuration.put(GERMAN + "_p", helper);
+		languages_configuration.put(LanguageSettings.GERMAN + "_p", helper);
 
 		/* SV */
 		helper = new String[2];
 		helper[NOUN_CLASS] = "neutrum";
 		helper[NOUN_DESCRIPTION] = c.getString(R.string.sv_neutrum);
-		languages_configuration.put(SWEDISH + "_n", helper);
+		languages_configuration.put(LanguageSettings.SWEDISH + "_n", helper);
 
 		helper = new String[2];
 		helper[NOUN_CLASS] = "utrum";
 		helper[NOUN_DESCRIPTION] = c.getString(R.string.sv_utrum);
-		languages_configuration.put(SWEDISH + "_u", helper);
+		languages_configuration.put(LanguageSettings.SWEDISH + "_u", helper);
 
 		helper = new String[2];
 		helper[NOUN_CLASS] = "Neutrum";
 		helper[NOUN_DESCRIPTION] = c.getString(R.string.sv_plural);
-		languages_configuration.put(SWEDISH + "_p", helper);
+		languages_configuration.put(LanguageSettings.SWEDISH + "_p", helper);
 	}
 
 	public static synchronized void initialize(Context where) {
@@ -110,72 +82,54 @@ public class BabelTower {
 
 	public static void upgradeFrom(int version, SQLiteDatabase sql_db) {
 		if (version < 17) {
-			for (String sql : Translation.purgetSQLTables()) {
-				sql_db.execSQL(sql);
-			}
-			for (String sql : Translation.createSQLTables()) {
-				sql_db.execSQL(sql);
-			}
-		}
-		if (version < 18) {
-			Log.d("AVB-BabelTower", "Moving to version 18.");
-			// TODO call optmize to tranlation text table
-			// TODO probably tables need optimization every time new language installed
-			// TODO IF NOT EXISTS
-			sql_db.execSQL("CREATE INDEX translation_index_confidence_trust_language ON "
-					+ Translation.TABLE + " ("
-					+ Translation.Fields.CONFIDENCE + ","
-					+ Translation.Fields.TRUST + ","
-					+ Translation.Fields.LANGUAGE + ");");
-			sql_db.execSQL("CREATE INDEX translation_index_language ON " + Translation.TABLE + " (" + Translation.Fields.LANGUAGE + ");");
+			sql_db.execSQL(Translation.purgetSQLTable());
+			sql_db.execSQL(Translation.createSQLTable());
 		}
 	}
 
-	public static void clean() {
-		// TODO only remove data
-		for (String sql : Translation.purgetSQLTables()) {
-			db_write.execSQL(sql);
-		}
-		for (String sql : Translation.createSQLTables()) {
-			db_write.execSQL(sql);
-		}
+	public static void prepare(String language) {
+		db_write.execSQL(Translation.createSQLTable(language));
 	}
 
 	public static void clean(String language) {
-		db_write.execSQL("DELETE FROM " + Translation.TABLE + " WHERE language = '" + language + "';");
-		db_write.execSQL("DELETE FROM " + Translation.TABLE_TEXT + " WHERE language MATCH '" + language + "';");
+		// TODO either move to translation or get purge to here.
+		db_write.execSQL("DROP TABLE IF EXISTS " + Translation.TABLE + "_" + language + ";");
+		db_write.execSQL("DELETE FROM " + Translation.TABLE_TEXT + " WHERE " + Translation.LANGUAGE + " MATCH '" + language + "';");
 	}
 
-	public static void optimize() {
+	public static void optimize(String language) {
 		db_write.execSQL("INSERT INTO " + Translation.TABLE_TEXT + "(" + Translation.TABLE_TEXT + ") VALUES('optimize');");
+		db_write.execSQL("CREATE INDEX IF NOT EXISTS translation_index_confidence_trust_" + language + " ON "
+				+ Translation.TABLE + "_" + language + " ("
+				+ Translation.CONFIDENCE + ","
+				+ Translation.TRUST + ");");
 	}
 
 	public static String prettyName(String l, Context c) {
-		if (l.equals(GERMAN))
+		if (l.equals(LanguageSettings.GERMAN))
 			return c.getString(R.string.languages_de_pretty);
-		if (l.equals(SWEDISH))
+		if (l.equals(LanguageSettings.SWEDISH))
 			return c.getString(R.string.languages_sv_pretty);
 		return "";
 	}
 
 	public static void addTranslation(ContentValues data, String language) {
-		data.put(Translation.Fields.LANGUAGE.toString(), language);
 		try {
-			db_write.insert(Translation.TABLE, null, data);
+			db_write.insert(Translation.TABLE + "_" + language, null, data);
 		} catch (SQLiteException e) {
-			Log.e("AVB-BabelTower", e.toString());
+			Log.e(TAG, e.toString());
 		}
 	}
 
 	public static void addTranslation(String key, String synonyms, String language) {
 		ContentValues data = new ContentValues();
-		data.put(Translation.Fields.LANGUAGE.toString(), language);
-		data.put(Translation.Fields.SYNONYMS.toString(), synonyms);
-		data.put(Translation.Fields.SENSE_KEY.toString(), key);
+		data.put(Translation.SYNONYMS, synonyms);
+		data.put(Translation.SENSE_KEY, key);
+		data.put(Translation.LANGUAGE, language);
 		try {
 			db_write.insert(Translation.TABLE_TEXT, null, data);
 		} catch (SQLiteException e) {
-			Log.e("AVB-BabelTower", e.toString());
+			Log.e(TAG, e.toString());
 		}
 	}
 
@@ -183,14 +137,14 @@ public class BabelTower {
 		List<Sense> results = new LinkedList<Sense>();
 		try {
 			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE_TEXT
-					+ " WHERE " + Translation.Fields.SYNONYMS
-					+ " MATCH '" + query + "';", null);
+					+ " WHERE " + Translation.SYNONYMS
+					+ " MATCH ? ;", new String[] { query });
 			if (c.moveToFirst()) {
 				do {
-					String key = c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString()));
+					String key = c.getString(c.getColumnIndex(Translation.SENSE_KEY));
 					Sense newone = Dictionary.getSense(key);
-					String list = c.getString(c.getColumnIndex(Translation.Fields.SYNONYMS.toString()));
-					String language = c.getString(c.getColumnIndex(Translation.Fields.LANGUAGE.toString()));
+					String list = c.getString(c.getColumnIndex(Translation.SYNONYMS));
+					String language = c.getString(c.getColumnIndex(Translation.LANGUAGE));
 					Translation t = new Translation(key, language);
 					t.setSynonyms(list);
 					t.cleanSynonyms(query);
@@ -200,8 +154,7 @@ public class BabelTower {
 				} while (c.moveToNext());
 			}
 		} catch (SQLiteException e) {
-			// TODO auto
-			e.printStackTrace();
+			Log.e(TAG, e.toString());
 		}
 		return results;
 	}
@@ -214,14 +167,13 @@ public class BabelTower {
 		Translation[][] results = new Translation[3][];
 		List<Translation> list = new LinkedList<Translation>();
 		Cursor c = db_read.rawQuery("SELECT"
-				+ " MAX(" + Translation.Fields.CONFIDENCE + "),"
-				+ " AVG(" + Translation.Fields.CONFIDENCE + "),"
-				+ " MIN(" + Translation.Fields.CONFIDENCE + "),"
-				+ " MAX(" + Translation.Fields.TRUST + "),"
-				+ " AVG(" + Translation.Fields.TRUST + "),"
-				+ " MIN(" + Translation.Fields.TRUST + ")"
-				+ " FROM " + Translation.TABLE
-				+ " WHERE " + Translation.Fields.LANGUAGE + " = '" + language + "';", null);
+				+ " MAX(" + Translation.CONFIDENCE + "),"
+				+ " AVG(" + Translation.CONFIDENCE + "),"
+				+ " MIN(" + Translation.CONFIDENCE + "),"
+				+ " MAX(" + Translation.TRUST + "),"
+				+ " AVG(" + Translation.TRUST + "),"
+				+ " MIN(" + Translation.TRUST + ")"
+				+ " FROM " + Translation.TABLE + "_" + language + ";", null);
 
 		if (c.moveToFirst()) {
 			float c_max = c.getFloat(0);
@@ -261,12 +213,11 @@ public class BabelTower {
 		int read = 0;
 		try {
 			// Log.d("AVB-BabelTower", "Trying to fetch " + count + ".");
-			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE
-					+ " WHERE " + Translation.Fields.LANGUAGE + " = '" + language + "'"
-					+ " AND " + Translation.Fields.TRUST + " <= " + t_max
-					+ " AND " + Translation.Fields.TRUST + " >= " + t_min
-					+ " AND " + Translation.Fields.CONFIDENCE + " <= " + c_max
-					+ " AND " + Translation.Fields.CONFIDENCE + " >= " + c_min
+			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE + "_" + language
+					+ " WHERE " + Translation.TRUST + " <= " + t_max
+					+ " AND " + Translation.TRUST + " >= " + t_min
+					+ " AND " + Translation.CONFIDENCE + " <= " + c_max
+					+ " AND " + Translation.CONFIDENCE + " >= " + c_min
 					+ " LIMIT " + count + ";", null);
 
 			if (c.moveToFirst()) {
@@ -274,7 +225,7 @@ public class BabelTower {
 				do {
 					// result[read] = BabelTower.getTranslation(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())), language);
 					// result[read++].setTerm(c.getString(c.getColumnIndex(Translation.Fields.TERM.toString())));
-					result[read++] = new Translation(c);
+					result[read++] = new Translation(c, language);
 				} while (c.moveToNext());
 				// Log.d("AVB-BabelTower", "Fetched " + read + ".");
 				if (result.length > count) {
@@ -291,8 +242,7 @@ public class BabelTower {
 			}
 			return new Translation[0];
 		} catch (SQLiteException e) {
-			// TODO auto
-			e.printStackTrace();
+			Log.e(TAG, e.toString());
 		}
 		return null;
 	}
@@ -301,26 +251,23 @@ public class BabelTower {
 		List<Translation> results = new LinkedList<Translation>();
 
 		try {
-			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE
-					+ " WHERE " + Translation.Fields.SENSE_KEY + " = '" + key + "'"
-					+ " AND " + Translation.Fields.LANGUAGE + " = '" + language + "';", null);
+			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE + "_" + language
+					+ " WHERE " + Translation.SENSE_KEY + " = ? ;", new String[] { key });
 			if (c.moveToFirst()) {
 				do {
-					results.add(new Translation(c));
+					results.add(new Translation(c, language));
 				} while (c.moveToNext());
 			}
 		} catch (SQLiteException e) {
-			// TODO auto
-			e.printStackTrace();
+			Log.e(TAG, e.toString());
 		}
 		return results;
 	}
 
 	public static void deleteTranslation(Translation t) {
-		String sql_table = "DELETE FROM " + Translation.TABLE
-				+ " WHERE " + Translation.Fields.SENSE_KEY + " = '" + t.getKey() + "'"
-				+ " AND " + Translation.Fields.LANGUAGE + " = '" + t.getLanguage() + "'"
-				+ " AND " + Translation.Fields.TERM + " = '" + t.getTerm() + "';";
+		String sql_table = "DELETE FROM " + Translation.TABLE + "_" + t.getLanguage()
+				+ " WHERE " + Translation.SENSE_KEY + " = '" + t.getKey() + "'"
+				+ " AND " + Translation.TERM + " = '" + t.getTerm() + "';";
 		String clean;
 		// TODO maybe move this code to Translation
 		if (t.getSynonyms() == null) {
@@ -334,23 +281,23 @@ public class BabelTower {
 		String sql_text;
 		if (t.getSynonyms().length() > 0) {
 			sql_text = "UPDATE " + Translation.TABLE_TEXT
-					+ " SET " + Translation.Fields.SYNONYMS + " = '" + t.getSynonyms() + "'"
+					+ " SET " + Translation.SYNONYMS + " = '" + t.getSynonyms() + "'"
 					+ " WHERE " + Translation.TABLE_TEXT + " MATCH '"
-					+ Translation.Fields.SENSE_KEY + ":" + t.getKey() + " "
-					+ Translation.Fields.LANGUAGE + ":" + t.getLanguage() + "';";
+					+ Translation.SENSE_KEY + ":" + t.getKey() + " "
+					+ Translation.LANGUAGE + ":" + t.getLanguage() + "';";
 		}
 		else {
 			sql_text = "DELETE FROM " + Translation.TABLE_TEXT
 					+ " WHERE " + Translation.TABLE_TEXT + " MATCH '"
-					+ Translation.Fields.SENSE_KEY + ":" + t.getKey() + " "
-					+ Translation.Fields.LANGUAGE + ":" + t.getLanguage() + "';";
+					+ Translation.SENSE_KEY + ":" + t.getKey() + " "
+					+ Translation.LANGUAGE + ":" + t.getLanguage() + "';";
 		}
 
 		try {
 			db_write.execSQL(sql_table);
 			db_write.execSQL(sql_text);
 		} catch (SQLiteException e) {
-			Log.e("AVB-BabelTower", e.toString());
+			Log.e(TAG, e.toString());
 		}
 	}
 
@@ -359,28 +306,28 @@ public class BabelTower {
 		try {
 			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE_TEXT
 					+ " WHERE " + Translation.TABLE_TEXT + " MATCH '"
-					+ Translation.Fields.SENSE_KEY + ":" + key + " "
-					+ Translation.Fields.LANGUAGE + ":" + language + "';", null);
+					+ Translation.SENSE_KEY + ":" + key + " "
+					+ Translation.LANGUAGE + ":" + language + "';", null);
 			if (c.moveToFirst()) {
-				result = c.getString(c.getColumnIndex(Translation.Fields.SYNONYMS.toString()));
+				result = c.getString(c.getColumnIndex(Translation.SYNONYMS.toString()));
 
 				if (c.moveToNext()) {
-					Log.e("AVB-BabelTower", "Danger Will Robinson! Danger! Duplicate language and key.");
+					Log.e(TAG, "Danger Will Robinson! Danger! Duplicate language and key.");
 				}
 			}
 		} catch (SQLiteException e) {
-			Log.e("AVB-BabelTower", e.toString());
+			Log.e(TAG, e.toString());
 		}
 		return result;
 	}
 
 	public static void addTranslation(Translation t) {
 		ContentValues map = new ContentValues();
-		map.put(Translation.Fields.SENSE_KEY.toString(), t.getKey());
-		map.put(Translation.Fields.TERM.toString(), t.getTerm());
-		map.put(Translation.Fields.TRUST.toString(), t.getTrust());
+		map.put(Translation.SENSE_KEY, t.getKey());
+		map.put(Translation.TERM, t.getTerm());
+		map.put(Translation.TRUST, t.getTrust());
 		if (t.getGrammar() != null) {
-			map.put(Translation.Fields.GRAMMAR_CLASS.toString(), t.getGrammar());
+			map.put(Translation.GRAMMAR, t.getGrammar());
 		}
 		addTranslation(map, t.getLanguage());
 
@@ -390,14 +337,14 @@ public class BabelTower {
 			synonyms += " " + t.getTerm();
 			synonyms.replace("  ", " ");
 			String sql_text = "UPDATE " + Translation.TABLE_TEXT
-					+ " SET " + Translation.Fields.SYNONYMS + " = '" + synonyms + "'"
+					+ " SET " + Translation.SYNONYMS + " = ?"
 					+ " WHERE " + Translation.TABLE_TEXT + " MATCH '"
-					+ Translation.Fields.SENSE_KEY + ":" + t.getKey() + " "
-					+ Translation.Fields.LANGUAGE + ":" + t.getLanguage() + "';";
+					+ Translation.SENSE_KEY + ":" + t.getKey() + " "
+					+ Translation.LANGUAGE + ":" + t.getLanguage() + "';";
 			try {
-				db_write.execSQL(sql_text);
+				db_write.execSQL(sql_text, new String[] { synonyms });
 			} catch (SQLiteException e) {
-				Log.e("AVB-BabelTower", e.toString());
+				Log.e(TAG, e.toString());
 			}
 		}
 		else {
@@ -408,16 +355,15 @@ public class BabelTower {
 	}
 
 	public static void saveTranslationTrust(Translation t) {
-		String sql = "UPDATE " + Translation.TABLE
-				+ " SET " + Translation.Fields.TRUST + " = " + t.getTrust()
-				+ " WHERE " + Translation.Fields.LANGUAGE + " = '" + t.getLanguage() + "'"
-				+ " AND " + Translation.Fields.SENSE_KEY + " = '" + t.getKey() + "'"
-				+ " AND " + Translation.Fields.TERM + " = '" + t.getTerm() + "';";
+		String sql = "UPDATE " + Translation.TABLE + "_" + t.getLanguage()
+				+ " SET " + Translation.TRUST + " = " + t.getTrust()
+				+ " WHERE " + Translation.SENSE_KEY + " = '" + t.getKey() + "'"
+				+ " AND " + Translation.TERM + " = '" + t.getTerm() + "';";
 
 		try {
 			db_write.execSQL(sql);
 		} catch (SQLiteException e) {
-			Log.e("AVB-BabelTower", e.toString());
+			Log.e(TAG, e.toString());
 		}
 	}
 }

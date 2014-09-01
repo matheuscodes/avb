@@ -67,9 +67,8 @@ public class LanguageSettings {
 	public static void installLanguage(String language, Context c) {
 		TranslationImporter caller;
 
-		// TODO testing, not adding
-		// caller = new TranslationImporter(language, c);
-		// caller.execute();
+		caller = new TranslationImporter(language, c);
+		caller.execute();
 
 		String sql = "UPDATE " + TABLE + " SET " + INSTALLED + " = 't' WHERE " + LANGUAGE + " = ?;";
 
@@ -81,8 +80,7 @@ public class LanguageSettings {
 	}
 
 	public static void removeLanguage(String language) {
-		// TODO testing, not removing.
-		// BabelTower.clean();
+		BabelTower.clean();
 
 		String sql = "UPDATE " + TABLE + " SET " + INSTALLED + " = 'f' WHERE " + LANGUAGE + " = ?;";
 

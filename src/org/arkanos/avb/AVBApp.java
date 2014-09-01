@@ -1,5 +1,7 @@
 package org.arkanos.avb;
 
+import org.arkanos.avb.data.BabelTower;
+import org.arkanos.avb.data.Dictionary;
 import org.arkanos.avb.data.LanguageSettings;
 
 import android.app.Application;
@@ -13,6 +15,8 @@ public class AVBApp extends Application {
 		super.onCreate();
 
 		LanguageSettings.initialize(this);
+		Dictionary.initialize(this);
+		BabelTower.initialize(this);
 	}
 
 }

@@ -7,7 +7,6 @@ import org.arkanos.avb.R;
 import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.Dictionary;
 import org.arkanos.avb.data.Sense;
-import org.arkanos.avb.data.WordnetImporter;
 import org.arkanos.avb.ui.DictionaryEntryHelper;
 import org.arkanos.avb.ui.SearchBoxHelper;
 
@@ -21,8 +20,6 @@ import android.widget.SearchView;
 
 public class Search extends ListActivity {
 
-	WordnetImporter dictionary = null;
-	BabelTower translations = null;
 	SearchView search_box = null;
 	String last_query = null;
 	List<Sense> last_results = null;
@@ -31,9 +28,6 @@ public class Search extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.dictionary_search);
-
-		dictionary = Dictionary.loadWordnet(this);
-		translations = BabelTower.prepareTranslations(this);
 
 		handleIntent(getIntent());
 	}

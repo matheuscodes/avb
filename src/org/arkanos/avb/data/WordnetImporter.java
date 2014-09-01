@@ -9,9 +9,9 @@ import org.arkanos.avb.R;
 import org.arkanos.avb.interfaces.ProgressObserver;
 import org.arkanos.avb.ui.LoadingDialog;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -29,7 +29,7 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 	private static final long SKIP = 1740;
 
 	private static ProgressObserver progress_observer = null;
-	private static Activity parent = null;
+	private static Context parent = null;
 
 	@Override
 	protected void onProgressUpdate(Integer... i) {
@@ -92,7 +92,7 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 		}
 	}
 
-	public WordnetImporter(Activity who) {
+	public WordnetImporter(Context who) {
 		progress_observer = new LoadingDialog(who);
 		progress_observer.replaceTitle(who.getString(R.string.load_dict));
 		progress_observer.replaceMessage(who.getString(R.string.load_dict_start));
@@ -105,7 +105,7 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 			ad.setNegativeButton(parent.getString(R.string.no), new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					progress_observer.finishIt();
-					parent.finish();
+					// parent.finish();//TODO oops, something will go wrong find a way.
 					Log.d("AVB-Wordnet", "Loading cancelled.");
 				}
 			});

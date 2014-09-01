@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.arkanos.avb.AVBApp;
 import org.arkanos.avb.R;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -17,6 +17,8 @@ import android.text.Html.ImageGetter;
 import android.util.Log;
 
 public class BabelTower {
+	public static final String TAG = AVBApp.TAG + "BabelTower";
+
 	// TODO everyone synchronized
 	private static SQLiteDatabase db_write = null;
 	private static SQLiteDatabase db_read = null;
@@ -101,16 +103,12 @@ public class BabelTower {
 		languages_configuration.put(SWEDISH + "_p", helper);
 	}
 
-	public static synchronized BabelTower prepareTranslations(Activity where) {
-		if (reference == null) {
-			reference = new BabelTower(); // TODO this is ugly as hell.
-			dictionary = Dictionary.loadWordnet(where); // Mapping dependency.
-			loadConfigs(where);
-			DatabaseHelper dbh = new DatabaseHelper(where);
-			db_read = dbh.getReadableDatabase();
-			db_write = dbh.getWritableDatabase();
-		}
-		return reference;
+	public static synchronized void initialize(Context where) {
+		Log.i(TAG, "Initializing.");
+		loadConfigs(where);
+		DatabaseHelper dbh = new DatabaseHelper(where);
+		db_read = dbh.getReadableDatabase();
+		db_write = dbh.getWritableDatabase();
 	}
 
 	public static void upgradeFrom(int version, SQLiteDatabase sql_db) {

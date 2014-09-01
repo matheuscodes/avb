@@ -3,28 +3,32 @@ package org.arkanos.avb.data;
 import java.util.LinkedList;
 import java.util.List;
 
-import android.app.Activity;
+import org.arkanos.avb.AVBApp;
+
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
 public class Dictionary {
+	public static final String TAG = AVBApp.TAG + "Dictionary";
+
 	// TODO everyone synchronized
 	private static SQLiteDatabase db_write = null;
 	private static SQLiteDatabase db_read = null;
 
 	private static WordnetImporter wordnet = null;
 
-	public static synchronized WordnetImporter loadWordnet(Activity context) {
+	public static synchronized void initialize(Context context) {
+		Log.i(TAG, "Initializing.");
+		DatabaseHelper dbh = new DatabaseHelper(context);
+		db_read = dbh.getReadableDatabase();
+		db_write = dbh.getWritableDatabase();
 		if (Dictionary.wordnet == null) {
-			DatabaseHelper dbh = new DatabaseHelper(context);
-			db_read = dbh.getReadableDatabase();
-			db_write = dbh.getWritableDatabase();
 			Dictionary.wordnet = new WordnetImporter(context);
 		}
-		return wordnet;
 	}
 
 	public static int getSize() {

@@ -1,8 +1,6 @@
 package org.arkanos.avb.activities;
 
 import org.arkanos.avb.R;
-import org.arkanos.avb.data.BabelTower;
-import org.arkanos.avb.data.WordnetImporter;
 import org.arkanos.avb.fragments.About;
 import org.arkanos.avb.fragments.Languages;
 import org.arkanos.avb.fragments.Stats;
@@ -21,15 +19,10 @@ public class Main extends Activity implements ActionBar.TabListener {
 
 	Fragment[] tabs = null;
 
-	WordnetImporter dictionary = null;
-	BabelTower translations = null;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// setContentView(R.layout.activity_main);//TODO delete the xml too
-
-		translations = BabelTower.prepareTranslations(this);
 
 		Intent intent = new Intent(this, Change.class);
 		intent.putExtra("language", "sv");

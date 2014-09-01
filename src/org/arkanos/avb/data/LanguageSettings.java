@@ -42,7 +42,7 @@ public class LanguageSettings {
 	}
 
 	public static synchronized void initialize(Context where) {
-		Log.d(TAG, "Initializing.");
+		Log.i(TAG, "Initializing.");
 		DatabaseHelper dbh = new DatabaseHelper(where);
 		db_read = dbh.getReadableDatabase();
 		db_write = dbh.getWritableDatabase();

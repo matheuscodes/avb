@@ -56,8 +56,37 @@ public class Trial extends Activity {
 			List<Translation> lt = new LinkedList<Translation>();
 			// TODO check for "right" alternatives in the "wrong" place.
 			// TODO get one antonym
-			for (int i = 0; i < ALTERNATIVES - 1; ++i) {
-				lt.add(partition.remove((int) (Math.random() * (partition.size() - 1))));
+			int i = ALTERNATIVES - 1;
+			List<Translation> bin = new LinkedList<Translation>();
+			while (i > 0) {
+				if (partition.size() <= i) {
+					for (Translation rest : partition) {
+						lt.add(rest);
+						--i;
+					}
+				}
+				else {
+					Translation possible = partition.remove((int) (Math.random() * (partition.size() - 1)));
+					if (t.getKey().equals(possible.getKey())) {
+						bin.add(possible);
+					}
+					else {
+						boolean exists = false;
+						for (Translation copy : lt) {
+							if (copy.getTerm().equals(possible.getTerm())) {
+								exists = true;
+							}
+						}
+						if (exists) {
+							bin.add(possible);
+						}
+						else {
+							lt.add(possible);
+							--i;
+						}
+					}
+				}
+
 			}
 			others.put(t, lt);
 		}

@@ -81,7 +81,7 @@ public class Main extends Activity implements ActionBar.TabListener {
 		}
 		else {
 			actionBar.setSelectedNavigationItem(2);
-			ft.attach(tabs[0]);
+			ft.attach(tabs[2]);
 		}
 
 		ft.commit();

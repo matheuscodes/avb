@@ -57,16 +57,19 @@ public class DictionaryEntryHelper {
 		List<HashMap<String, Spanned>> fillMaps = new LinkedList<HashMap<String, Spanned>>();
 		for (Sense s : ls) {
 			HashMap<String, Spanned> map = new HashMap<String, Spanned>(4);
-			String word = s.getString(Sense.Fields.SYNONYMS);
-			if (word.indexOf(' ') > 0) {
-				word = word.substring(0, word.indexOf(' '));
+			String word = s.getHead();
+			String rest = s.getSynonyms().replace(word, "");
+			if (rest.indexOf(',') == 0) {
+				rest = rest.substring(1);
 			}
-			String rest = s.getString(Sense.Fields.SYNONYMS).substring(word.indexOf(' ') + 1);
-			rest = rest.trim().replace(" ", ", ");
+			rest = rest.trim();
 			map.put("dict_word", format("<img src=\"en\"/>  " + word, query, where));
 			map.put("dict_class", format("<i>" + s.getString(Sense.Fields.GRAMMAR_CLASS) + "</i>", query, where));
 			map.put("dict_glossary", format(s.getString(Sense.Fields.GLOSSARY), query, where));
-			String extras = "<i>" + where.getString(R.string.dict_synonyms) + ":</i> " + rest;
+			String extras = "";
+			if (rest.length() > 0) {
+				extras = "<i>" + where.getString(R.string.dict_synonyms) + ":</i> " + rest;
+			}
 			for (Map.Entry<String, Translation> t : s.getTranslations().entrySet()) {
 				extras += "<br/><br/><img src=\"" + t.getKey() + "\"/>  " + t.getValue().getSynonyms();
 			}
@@ -86,7 +89,6 @@ public class DictionaryEntryHelper {
 				.replace(" \"", " <i>\"")
 				.replace("\" ", "\"</i> ")
 				.replace(";", "<br/>")
-				.replace("_", " ")
 				.replace(query, "<u>" + query + "</u>"), BabelTower.getFlags(where), null);
 	}
 }

@@ -121,10 +121,10 @@ public class Trial extends Activity {
 		else {
 			alternatives.add(rightone, t);
 		}
-		((RadioButton) content.findViewById(R.id.trial_option0)).setText(alternatives.remove(0).getTerm().replace('_', ' '));
-		((RadioButton) content.findViewById(R.id.trial_option1)).setText(alternatives.remove(0).getTerm().replace('_', ' '));
-		((RadioButton) content.findViewById(R.id.trial_option2)).setText(alternatives.remove(0).getTerm().replace('_', ' '));
-		((RadioButton) content.findViewById(R.id.trial_option3)).setText(alternatives.remove(0).getTerm().replace('_', ' '));
+		((RadioButton) content.findViewById(R.id.trial_option0)).setText(alternatives.remove(0).getTerm());
+		((RadioButton) content.findViewById(R.id.trial_option1)).setText(alternatives.remove(0).getTerm());
+		((RadioButton) content.findViewById(R.id.trial_option2)).setText(alternatives.remove(0).getTerm());
+		((RadioButton) content.findViewById(R.id.trial_option3)).setText(alternatives.remove(0).getTerm());
 
 		Button b = (Button) this.findViewById(R.id.trial_confirm);
 		b.setOnClickListener(new OnClickListener() {

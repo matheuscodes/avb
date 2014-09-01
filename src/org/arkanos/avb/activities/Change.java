@@ -108,7 +108,7 @@ public class Change extends Activity {
 				final TableRow tr = new TableRow(this);
 
 				final TextView tv = new TextView(this);
-				tv.setText(t.getTerm().replace('_', ' '));
+				tv.setText(t.getTerm());
 				tr.addView(tv, new TableRow.LayoutParams(
 						TableRow.LayoutParams.MATCH_PARENT,
 						TableRow.LayoutParams.WRAP_CONTENT,

@@ -97,6 +97,7 @@ public class Translation {
 	}
 
 	public void cleanSynonyms(String query) {
+		// TODO check for each term of the query as well make_out, make, out...
 		String newsynonyms = "";
 		String query_right = query.replace(' ', '_').toLowerCase(Locale.getDefault());
 		for (String s : breakToTerms(synonyms)) {
@@ -130,7 +131,7 @@ public class Translation {
 	}
 
 	public String getTerm() {
-		return term;
+		return term.replace('_', ' ');
 	}
 
 	public float getTrust() {

@@ -1,6 +1,5 @@
 package org.arkanos.avb.activities;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.arkanos.avb.R;
@@ -29,46 +28,16 @@ public class Change extends Activity {
 	public static final String LANGUAGE = "language";
 	public static final String KEY = "key";
 
-	List<Translation> remove = null;
-	List<Translation> confirm = null;
-	List<Translation> insert = null;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.change);
 
-		remove = new LinkedList<Translation>();
-		confirm = new LinkedList<Translation>();
-		insert = new LinkedList<Translation>();
-
-		// BabelTower.prepareTranslations(this); // TODO remove this or do more elegantly
-
-		// TODO WTF, why can't this be on onCreate?
-		Button save = (Button) findViewById(R.id.change_execute);
-		save.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Log.d("AVB-Change", "Clicking...");
-				for (Translation t : insert) {
-					BabelTower.addTranslation(t);
-				}
-				for (Translation t : remove) {
-					BabelTower.deleteTranslation(t);
-				}
-				for (Translation t : confirm) {
-					t.increaseTrust(1f); // TODO reference in a constant somewhere
-					BabelTower.saveTranslationTrust(t);
-				}
-				finish();
-			}
-		});
-
 		Intent intent = getIntent();
 		if (intent != null) {
 			handleIntent(intent);
 		}
-		Log.e("AVB-Change", "No intent with information.");
+		Log.e("AVB-Change", "Created but no intent with information.");
 	}
 
 	@Override
@@ -76,7 +45,7 @@ public class Change extends Activity {
 		if (intent != null) {
 			handleIntent(intent);
 		}
-		Log.e("AVB-Change", "This doesn't make sense.");
+		Log.e("AVB-Change", "Hope this never happens.");
 	}
 
 	private void handleIntent(Intent intent) {
@@ -127,7 +96,8 @@ public class Change extends Activity {
 						tr.removeView(confirm_button);
 						tr.removeView(remove_button);
 						tv.setTextColor(getResources().getColor(R.color.change_confirmed));
-						confirm.add(item);
+						item.increaseTrust(1f); // TODO reference in a constant somewhere
+						BabelTower.saveTranslationTrust(item);
 					}
 				});
 				if (item.getTrust() < 1f) {// TODO reference in a constant somewhere
@@ -145,7 +115,7 @@ public class Change extends Activity {
 						tr.removeView(confirm_button);
 						tr.removeView(remove_button);
 						tv.setTextColor(getResources().getColor(R.color.change_removed));
-						remove.add(item);
+						BabelTower.deleteTranslation(item);
 					}
 				});
 				tr.addView(remove_button);
@@ -186,7 +156,7 @@ public class Change extends Activity {
 							Translation new_one = new Translation(sense_key, language);
 							new_one.setTerm(text.trim().replace(' ', '_'));
 							new_one.setTrust(1f);
-							insert.add(new_one);
+							BabelTower.addTranslation(new_one);
 
 							TextView added = new TextView(v.getContext());
 							added.setText(text);

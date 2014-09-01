@@ -11,6 +11,7 @@ import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 
@@ -23,10 +24,10 @@ public class Main extends Activity implements ActionBar.TabListener {
 		super.onCreate(savedInstanceState);
 		// setContentView(R.layout.activity_main);//TODO delete the xml too
 
-		// Intent intent = new Intent(this, Change.class);
-		// intent.putExtra("language", "sv");
-		// intent.putExtra("key", "v02588280");
-		// startActivity(intent);
+		Intent intent = new Intent(this, Change.class);
+		intent.putExtra("language", "sv");
+		intent.putExtra("key", "v02588280");
+		startActivity(intent);
 
 		// Set up the action bar.
 

@@ -129,7 +129,7 @@ public class Translation {
 	}
 
 	public String getTerm() {
-		return term.replace('_', ' ');
+		return term;
 	}
 
 	public float getTrust() {

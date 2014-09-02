@@ -4,6 +4,7 @@ import org.arkanos.avb.interfaces.ProgressObserver;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.view.WindowManager;
 
 public class WaitingDialog extends ProgressDialog implements ProgressObserver {
 
@@ -30,11 +31,13 @@ public class WaitingDialog extends ProgressDialog implements ProgressObserver {
 	@Override
 	public void startIt() {
 		this.show();
+		this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
 	@Override
 	public void finishIt() {
 		this.dismiss();
+		this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
 	@Override

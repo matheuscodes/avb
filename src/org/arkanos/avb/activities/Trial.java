@@ -7,12 +7,13 @@ import java.util.List;
 import org.arkanos.avb.R;
 import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.Dictionary;
-import org.arkanos.avb.data.LanguageSettings;
 import org.arkanos.avb.data.Sense;
 import org.arkanos.avb.data.Translation;
 import org.arkanos.avb.ui.DictionaryEntryHelper;
+import org.arkanos.avb.ui.WaitingDialog;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,6 +32,8 @@ public class Trial extends Activity {
 	private static final int PARTITION = 3 * 3 * SIZE;
 	private static final int ALTERNATIVES = 4;
 
+	public static final String LANGUAGE = "language";
+
 	private List<Translation> selected;
 	HashMap<Translation, List<Translation>> others;
 
@@ -39,64 +42,97 @@ public class Trial extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.trial_master);
 
+		Intent intent = getIntent();
+		if (intent != null) {
+			startUpTest(intent.getStringExtra(LANGUAGE));
+		}
+		Log.e("AVB-Trial", "Created but no intent with information.");
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		if (intent != null) {
+			startUpTest(intent.getStringExtra(LANGUAGE));
+		}
+		Log.e("AVB-Trial", "Hope this never happens.");
+	}
+
+	private synchronized void startUpTest(final String language) {
 		// BabelTower.prepareTranslations(this); // TODO remove this or do more elegantly
 
+		final WaitingDialog dialog = new WaitingDialog(this);
+		dialog.replaceTitle(getString(R.string.trial_load));
+		dialog.replaceMessage(getString(R.string.trial_load_text));
+		dialog.startIt();
 		// TODO nothing when there aren't enough items for 1 game and alternatives
-		Log.d("AVB-Trial", "Getting partition...");
-		List<Translation> partition = BabelTower.getPartition(PARTITION, LanguageSettings.GERMAN);
-		Log.d("AVB-Trial", "Got partition of size " + partition.size());
+		new AsyncTask<Void, Void, List<Translation>>() {
 
-		others = new HashMap<Translation, List<Translation>>();
-		selected = new LinkedList<Translation>();
-		while (selected.size() < SIZE && partition.size() > 0) {
-			Translation t = partition.remove((int) (Math.random() * (partition.size() - 1)));
-			selected.add(t);
-		}
+			@Override
+			protected List<Translation> doInBackground(Void... params) {
+				Log.d("AVB-Trial", "Getting partition for " + language);
+				List<Translation> selection = BabelTower.getPartition(PARTITION, language);
+				Log.d("AVB-Trial", "Got partition of size " + selection.size());
+				return selection;
+			}
 
-		for (Translation t : selected) {
-			List<Translation> lt = new LinkedList<Translation>();
-			// TODO check for "right" alternatives in the "wrong" place.
-			// TODO get one antonym
-			int i = ALTERNATIVES - 1;
-			List<Translation> bin = new LinkedList<Translation>();
-			while (i > 0) {
-				if (partition.size() <= i) {
-					for (Translation rest : partition) {
-						lt.add(rest);
-						--i;
-					}
+			@Override
+			protected void onPostExecute(List<Translation> partition) {
+				others = new HashMap<Translation, List<Translation>>();
+				selected = new LinkedList<Translation>();
+				while (selected.size() < SIZE && partition.size() > 0) {
+					Translation t = partition.remove((int) (Math.random() * (partition.size() - 1)));
+					selected.add(t);
 				}
-				else {
-					Translation possible = partition.remove((int) (Math.random() * (partition.size() - 1)));
-					if (t.getKey().equals(possible.getKey())) {
-						bin.add(possible);
-					}
-					else {
-						boolean exists = false;
-						for (Translation copy : lt) {
-							if (copy.getTerm().equals(possible.getTerm())) {
-								exists = true;
+
+				for (Translation t : selected) {
+					List<Translation> lt = new LinkedList<Translation>();
+					// TODO check for "right" alternatives in the "wrong" place.
+					// TODO get one antonym
+					int i = ALTERNATIVES - 1;
+					List<Translation> bin = new LinkedList<Translation>();
+					while (i > 0) {
+						if (partition.size() <= i) {
+							for (Translation rest : partition) {
+								lt.add(rest);
+								--i;
 							}
 						}
-						if (exists) {
-							bin.add(possible);
-						}
 						else {
-							lt.add(possible);
-							--i;
+							Translation possible = partition.remove((int) (Math.random() * (partition.size() - 1)));
+							if (t.getKey().equals(possible.getKey())) {
+								bin.add(possible);
+							}
+							else {
+								boolean exists = false;
+								for (Translation copy : lt) {
+									if (copy.getTerm().equals(possible.getTerm())) {
+										exists = true;
+									}
+								}
+								if (exists) {
+									bin.add(possible);
+								}
+								else {
+									lt.add(possible);
+									--i;
+								}
+							}
 						}
+
 					}
+					/* Recovering the discarded */
+					for (Translation discarded : bin) {
+						partition.add(discarded);
+					}
+					others.put(t, lt);
 				}
 
-			}
-			/* Recovering the discarded */
-			for (Translation discarded : bin) {
-				partition.add(discarded);
-			}
-			others.put(t, lt);
-		}
+				dialog.finishIt();
 
-		moveToNext();
+				moveToNext();
+			}
+		}.execute();
+
 	}
 
 	private void moveToNext() {

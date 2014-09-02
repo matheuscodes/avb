@@ -1,18 +1,20 @@
 package org.arkanos.avb.fragments;
 
 import org.arkanos.avb.R;
+import org.arkanos.avb.activities.Change;
 import org.arkanos.avb.activities.Trial;
+import org.arkanos.avb.data.LanguageSettings;
+import org.arkanos.avb.ui.StatusWheel;
 
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Html;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class Stats extends Fragment {
@@ -23,27 +25,48 @@ public class Stats extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-		TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-		String content = "";
-		content += getString(R.string.copyright);
-		content += getString(R.string.app_version);
-		content += getString(R.string.copyright_external);
+		final View rootView = inflater.inflate(R.layout.stats, container, false);
 
-		textView.setText(Html.fromHtml(content));
+		LinearLayout ll = (LinearLayout) rootView.findViewById(R.id.stats_content);
+		LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
 
-		Button buttonView = (Button) rootView.findViewById(R.id.button1);
-		buttonView.setOnClickListener(new OnClickListener() {
+		TextView title = new TextView(rootView.getContext());
+		title.setText(this.getString(R.string.stats_intro));
+		ll.addView(title, llp);
 
-			@Override
-			public void onClick(View arg0) {
-				Log.d("AVB-Stats", "Crap.");
-				Intent intent = new Intent(rootView.getContext(), Trial.class);
-				startActivity(intent);
-			}
+		ll.addView(new StatusWheel(rootView.getContext()), llp);
 
-		});
+		for (final String l : LanguageSettings.getInstalledLanguages()) {
+			String helper;
 
+			Button test = new Button(rootView.getContext());
+			helper = this.getString(R.string.stats_trial).replace("{language}", LanguageSettings.prettyName(l, rootView.getContext()));
+			test.setText(helper);
+			test.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View arg0) {
+					Intent intent = new Intent(rootView.getContext(), Trial.class);
+					intent.putExtra(Trial.LANGUAGE, l);// TODO make a constant
+					startActivity(intent);
+				}
+			});
+			ll.addView(test, llp);
+
+			Button insert = new Button(rootView.getContext());
+			helper = this.getString(R.string.stats_add).replace("{language}", LanguageSettings.prettyName(l, rootView.getContext()));
+			insert.setText(helper);
+			insert.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View arg0) {
+					Intent intent = new Intent(rootView.getContext(), Change.class);
+					intent.putExtra(Change.LANGUAGE, l);// TODO make a constant
+					intent.putExtra(Change.KEY, "v02588280");// TODO make a constant
+					startActivity(intent);
+				}
+			});
+			ll.addView(insert, llp);
+
+		}
 		return rootView;
 	}
 }

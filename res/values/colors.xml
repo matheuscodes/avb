@@ -2,4 +2,9 @@
 <resources>
     <color name="change_confirmed">#009900</color>
     <color name="change_removed">#990000</color>
+    
+    <color name="stats_good">#00FF00</color>
+    <color name="stats_bad">#FF0000</color>
+    <color name="stats_coverage">#FFFFFF</color>
+    <color name="stats_text">#FFFFFF</color>
 </resources>

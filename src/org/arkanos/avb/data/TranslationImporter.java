@@ -28,7 +28,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 
 	public TranslationImporter(String l, Context c) {
 		dialog = new LoadingDialog(c);
-		title = c.getString(R.string.load_translation).replace("{language}", BabelTower.prettyName(l, c));
+		title = c.getString(R.string.load_translation).replace("{language}", LanguageSettings.prettyName(l, c));
 		message = c.getString(R.string.load_translation_start);
 		language = l;
 		parent = c;

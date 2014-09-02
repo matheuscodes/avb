@@ -105,14 +105,6 @@ public class BabelTower {
 				+ Translation.TRUST + ");");
 	}
 
-	public static String prettyName(String l, Context c) {
-		if (l.equals(LanguageSettings.GERMAN))
-			return c.getString(R.string.languages_de_pretty);
-		if (l.equals(LanguageSettings.SWEDISH))
-			return c.getString(R.string.languages_sv_pretty);
-		return "";
-	}
-
 	public static void addTranslation(ContentValues data, String language) {
 		try {
 			db_write.insert(Translation.TABLE + "_" + language, null, data);

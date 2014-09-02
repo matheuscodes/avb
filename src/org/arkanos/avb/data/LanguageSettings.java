@@ -1,6 +1,7 @@
 package org.arkanos.avb.data;
 
-import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.arkanos.avb.AVBApp;
 import org.arkanos.avb.R;
@@ -58,14 +59,14 @@ public class LanguageSettings {
 		db_write = dbh.getWritableDatabase();
 	}
 
-	public static HashMap<String, Boolean> getInstalledLanguages() {
-		HashMap<String, Boolean> states = new HashMap<String, Boolean>();
+	public static List<String> getInstalledLanguages() {
+		List<String> states = new LinkedList<String>();
 		String sql = "SELECT " + LANGUAGE + "," + INSTALLED + " FROM " + TABLE + ";";
 		try {
 			Cursor c = db_write.rawQuery(sql, null);
 			while (c.moveToNext()) {
 				if (c.getString(c.getColumnIndex(INSTALLED)).equals("t")) {
-					states.put(c.getString(c.getColumnIndex(LANGUAGE)), true);
+					states.add(c.getString(c.getColumnIndex(LANGUAGE)));
 				}
 			}
 		} catch (SQLiteException e) {
@@ -91,7 +92,7 @@ public class LanguageSettings {
 
 	public static void removeLanguage(final String language, Context where) {
 		final WaitingDialog wd = new WaitingDialog(where);
-		wd.replaceTitle(where.getString(R.string.unload_translation).replace("{language}", BabelTower.prettyName(language, where)));
+		wd.replaceTitle(where.getString(R.string.unload_translation).replace("{language}", prettyName(language, where)));
 		wd.replaceMessage(where.getString(R.string.unload_translation_text));
 		wd.startIt();
 		new AsyncTask<Void, Void, Void>() {
@@ -136,5 +137,13 @@ public class LanguageSettings {
 			};
 		}
 		return flags;
+	}
+
+	public static String prettyName(String l, Context c) {
+		if (l.equals(LanguageSettings.GERMAN))
+			return c.getString(R.string.languages_de_pretty);
+		if (l.equals(LanguageSettings.SWEDISH))
+			return c.getString(R.string.languages_sv_pretty);
+		return "";
 	}
 }

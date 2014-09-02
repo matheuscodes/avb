@@ -41,10 +41,15 @@
     
     <!-- Stats Screen -->
     <string name="stats_tab">Stats</string>
+    <string name="stats_intro">Your knowledge and database coverage:</string>
+    <string name="stats_trial">Test your {language} skills</string>
+    <string name="stats_add">Translate dictionary to {language}</string>
     
     <!-- Trial Screen -->
     <string name="trial_next">Confirm and get next</string>
     <string name="trial_dont_know">I don\'t know</string>
+    <string name="trial_load">Loading data&#8230;</string>
+    <string name="trial_load_text">Please be patient.</string>
     
     <!-- Search Screen -->
     <string name="search_tab">Search</string>

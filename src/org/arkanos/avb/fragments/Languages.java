@@ -1,6 +1,6 @@
 package org.arkanos.avb.fragments;
 
-import java.util.HashMap;
+import java.util.List;
 
 import org.arkanos.avb.R;
 import org.arkanos.avb.data.LanguageSettings;
@@ -22,7 +22,7 @@ public class Languages extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-		HashMap<String, Boolean> states = LanguageSettings.getInstalledLanguages();
+		List<String> states = LanguageSettings.getInstalledLanguages();
 
 		final View rootView = inflater.inflate(R.layout.languages_selection, container, false);
 
@@ -35,11 +35,11 @@ public class Languages extends Fragment {
 		return rootView;
 	}
 
-	private void configureCheckbox(final View root, final int id, HashMap<String, Boolean> states, final String language) {
+	private void configureCheckbox(final View root, final int id, List<String> states, final String language) {
 		final CheckBox cb = ((CheckBox) root.findViewById(id));
 		boolean state = false;
-		if (states.get(language) != null) {
-			state = states.get(language);
+		if (states.contains(language)) {
+			state = true;
 		}
 		cb.setChecked(state);
 		cb.setOnClickListener(new OnClickListener() {

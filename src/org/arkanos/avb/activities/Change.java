@@ -5,6 +5,7 @@ import java.util.List;
 import org.arkanos.avb.R;
 import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.Dictionary;
+import org.arkanos.avb.data.LanguageSettings;
 import org.arkanos.avb.data.Sense;
 import org.arkanos.avb.data.Translation;
 import org.arkanos.avb.ui.DictionaryEntryHelper;
@@ -54,7 +55,7 @@ public class Change extends Activity {
 		String title = this.getResources().getString(R.string.change_title);
 		Sense sense = Dictionary.getSense(sense_key);
 
-		title = title.replace("{language}", BabelTower.prettyName(language, this));
+		title = title.replace("{language}", LanguageSettings.prettyName(language, this));
 
 		if (sense != null) {
 			title = title.replace("{word}", sense.getHead());

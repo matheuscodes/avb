@@ -85,7 +85,7 @@ public class Translation {
 	public String getSynonyms() {
 		// TODO maybe rename to "getPretty" because of the set (which expects data-data)
 		if (synonyms != null) {
-			return synonyms.replace(" ", ", ").replace('_', ' ');
+			return synonyms.replace(" ", ", ").replace('_', ' '); // TODO move back all this crap causing regression.
 		}
 		return null;
 	}

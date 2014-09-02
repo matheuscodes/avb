@@ -1,6 +1,10 @@
 package org.arkanos.avb.activities;
 
+import org.arkanos.avb.AVBApp;
 import org.arkanos.avb.R;
+import org.arkanos.avb.data.BabelTower;
+import org.arkanos.avb.data.Dictionary;
+import org.arkanos.avb.data.LanguageSettings;
 import org.arkanos.avb.fragments.About;
 import org.arkanos.avb.fragments.Languages;
 import org.arkanos.avb.fragments.Stats;
@@ -21,13 +25,13 @@ public class Main extends Activity implements ActionBar.TabListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// setContentView(R.layout.activity_main);//TODO delete the xml too
 
-		// Intent intent = new Intent(this, Change.class);
-		// intent.putExtra("language", "sv");
-		// intent.putExtra("key", "v02588280");
-		// startActivity(intent);
-
+		// FIXME Done in the launch activity because of the dialogs first time.
+		if (AVBApp.failedInitialize()) {
+			LanguageSettings.initialize(this);
+			Dictionary.initialize(this);
+			BabelTower.initialize(this);
+		}
 		// Set up the action bar.
 
 		final ActionBar actionBar = getActionBar();

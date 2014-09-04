@@ -35,8 +35,9 @@ public class Dictionary {
 		try {
 			Cursor c = db_read.rawQuery("SELECT COUNT(*) FROM " + Sense.TABLE + ";", null);
 			if (c.moveToFirst()) {
+				int result = c.getInt(0);
 				c.close();
-				return c.getInt(0);
+				return result;
 			}
 			c.close();
 		} catch (SQLiteException e) {

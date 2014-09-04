@@ -35,8 +35,10 @@ public class Dictionary {
 		try {
 			Cursor c = db_read.rawQuery("SELECT COUNT(*) FROM " + Sense.TABLE + ";", null);
 			if (c.moveToFirst()) {
+				c.close();
 				return c.getInt(0);
 			}
+			c.close();
 		} catch (SQLiteException e) {
 			Log.e("AVB-Dictionary", e.toString());
 		}
@@ -65,6 +67,7 @@ public class Dictionary {
 					results.add(newone);
 				} while (c.moveToNext());
 			}
+			c.close();
 		} catch (SQLiteException e) {
 			Log.e("AVB-Dictionary", e.toString());
 		}
@@ -112,8 +115,10 @@ public class Dictionary {
 				if (c.moveToNext()) {
 					Log.e("AVB-Dictionary", "Danger Will Robinson! Danger! Duplicated sense key.");
 				}
+				c.close();
 				return newone;
 			}
+			c.close();
 		} catch (SQLiteException e) {
 			Log.e("AVB-Dictionary", e.toString());
 		}

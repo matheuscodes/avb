@@ -145,6 +145,7 @@ public class BabelTower {
 					results.add(newone);
 				} while (c.moveToNext());
 			}
+			c.close();
 		} catch (SQLiteException e) {
 			Log.e(TAG, e.toString());
 		}
@@ -197,6 +198,8 @@ public class BabelTower {
 				list.add(t);
 			}
 		}
+
+		c.close();
 		return list;
 	}
 
@@ -228,10 +231,13 @@ public class BabelTower {
 							copy[i++] = t;
 						}
 					}
+					c.close();
 					return copy;
 				}
+				c.close();
 				return result;
 			}
+			c.close();
 			return new Translation[0];
 		} catch (SQLiteException e) {
 			Log.e(TAG, e.toString());
@@ -250,6 +256,8 @@ public class BabelTower {
 					results.add(new Translation(c, language));
 				} while (c.moveToNext());
 			}
+
+			c.close();
 		} catch (SQLiteException e) {
 			Log.e(TAG, e.toString());
 		}
@@ -307,6 +315,8 @@ public class BabelTower {
 					Log.e(TAG, "Danger Will Robinson! Danger! Duplicate language and key.");
 				}
 			}
+
+			c.close();
 		} catch (SQLiteException e) {
 			Log.e(TAG, e.toString());
 		}

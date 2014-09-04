@@ -69,6 +69,7 @@ public class LanguageSettings {
 					states.add(c.getString(c.getColumnIndex(LANGUAGE)));
 				}
 			}
+			c.close();
 		} catch (SQLiteException e) {
 			Log.e(TAG, e.toString());
 		}

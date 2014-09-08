@@ -3,6 +3,8 @@ package org.arkanos.avb.activities;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.arkanos.avb.R;
 import org.arkanos.avb.data.BabelTower;
@@ -16,14 +18,20 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 
 public class Trial extends Activity {
 
@@ -35,16 +43,25 @@ public class Trial extends Activity {
 	public static final String LANGUAGE = "language";
 
 	private List<Translation> selected;
-	HashMap<Translation, List<Translation>> others;
+	private HashMap<Translation, List<Translation>> others;
+
+	private HashMap<Translation, String> incorrect;
+
+	private String language = null;
+
+	private AsyncTask<Void, Void, Void> timer = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.trial_master);
 
+		incorrect = new HashMap<Translation, String>();
+
 		Intent intent = getIntent();
 		if (intent != null) {
-			startUpTest(intent.getStringExtra(LANGUAGE));
+			language = intent.getStringExtra(LANGUAGE);
+			startUpTest();
 		}
 		Log.e("AVB-Trial", "Created but no intent with information.");
 	}
@@ -52,12 +69,13 @@ public class Trial extends Activity {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		if (intent != null) {
-			startUpTest(intent.getStringExtra(LANGUAGE));
+			language = intent.getStringExtra(LANGUAGE);
+			startUpTest();
 		}
 		Log.e("AVB-Trial", "Hope this never happens.");
 	}
 
-	private synchronized void startUpTest(final String language) {
+	private synchronized void startUpTest() {
 		// BabelTower.prepareTranslations(this); // TODO remove this or do more elegantly
 
 		final WaitingDialog dialog = new WaitingDialog(this);
@@ -140,11 +158,76 @@ public class Trial extends Activity {
 			createNewStep(selected.remove(0));
 		}
 		else {
-			finish();
+			if (timer != null) {
+				timer.cancel(true);
+				timer = null;
+			}
+			final RelativeLayout content = (RelativeLayout) this.findViewById(R.id.trial_super_master);
+			content.removeAllViews();
+			getLayoutInflater().inflate(R.layout.trial_report, content);
+			TableLayout table = (TableLayout) content.findViewById(R.id.trial_report_content);
+			for (Map.Entry<Translation, String> wrong_one : incorrect.entrySet()) {
+				final Translation right = wrong_one.getKey();
+				Sense s = Dictionary.getSense(right.getKey());
+				String all = BabelTower.getTranslationSynonyms(right.getKey(), language);
+				String given = wrong_one.getValue();
+
+				TableRow tr = new TableRow(this);
+				TextView tv = new TextView(this);
+
+				String sentence = "<b>" + s.getHead().replace('_', ' ') + ":</b><br/>";
+				if (given.equals(getString(R.string.trial_dont_know))) {
+					sentence += getString(R.string.trial_report_skipped);
+					tr.setBackgroundColor(getResources().getColor(R.color.trial_skipped));
+				}
+				else if (all.toLowerCase(Locale.getDefault()).contains(given.toLowerCase(Locale.getDefault()))) {
+					sentence += getString(R.string.trial_report_half);
+					tr.setBackgroundColor(getResources().getColor(R.color.trial_half));
+				}
+				else {
+					sentence += getString(R.string.trial_report_wrong);
+					tr.setBackgroundColor(getResources().getColor(R.color.trial_wrong));
+				}
+				sentence = sentence.replace("{wrong}", given);
+				sentence = sentence.replace("{correct}", right.getTerm().replace('_', ' '));
+				tv.setText(Html.fromHtml(sentence));
+				tr.addView(tv, new TableRow.LayoutParams(
+						TableRow.LayoutParams.MATCH_PARENT,
+						TableRow.LayoutParams.WRAP_CONTENT,
+						1.0f));
+				tv.setGravity(Gravity.CENTER_VERTICAL);
+
+				int button_height = (int) (getResources().getDisplayMetrics().density * 40 + 0.5f);
+				final Button fix_button = new Button(this, null, android.R.attr.buttonStyleSmall);
+				fix_button.setText(this.getString(R.string.trial_report_fix));
+				fix_button.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, button_height));
+				fix_button.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View arg0) {
+						Intent intent = new Intent(content.getContext(), Change.class);
+						intent.putExtra(Change.LANGUAGE, language);
+						intent.putExtra(Change.KEY, right.getKey());
+						startActivity(intent);
+					}
+				});
+
+				tr.addView(fix_button, new TableRow.LayoutParams(
+						TableRow.LayoutParams.WRAP_CONTENT,
+						TableRow.LayoutParams.WRAP_CONTENT,
+						0.1f));
+
+				tr.setGravity(Gravity.CENTER_VERTICAL);
+				tr.setVerticalGravity(Gravity.CENTER_VERTICAL);
+
+				table.addView(tr, new TableLayout.LayoutParams(
+						TableRow.LayoutParams.MATCH_PARENT,
+						TableRow.LayoutParams.WRAP_CONTENT,
+						1.0f));
+			}
 		}
 	}
 
-	private void createNewStep(Translation t) {
+	private void createNewStep(final Translation t) {
 		final RelativeLayout content = (RelativeLayout) this.findViewById(R.id.trial_content);
 		content.removeAllViews();
 		getLayoutInflater().inflate(R.layout.trial_multiple, content);
@@ -193,8 +276,9 @@ public class Trial extends Activity {
 					Log.d("AVB-Trial", "Correct Selection!");
 				}
 				else {
-					RadioButton rb = (RadioButton) content.findViewById(correct);
-					Log.d("AVB-Trial", "Wrong, expected: " + rb.getText());
+					RadioButton rb = (RadioButton) content.findViewById(rg.getCheckedRadioButtonId());
+					incorrect.put(t, rb.getText().toString());
+					Log.d("AVB-Trial", "Wrong, expected: " + t.getTerm());
 				}
 				moveToNext();
 			}
@@ -204,28 +288,33 @@ public class Trial extends Activity {
 		progress.setMax(100);
 		progress.setProgress(100);
 		progress.setActivated(true);
-		new AsyncTask<Void, Void, Void>() {
-			@Override
-			protected Void doInBackground(Void... a) {
-				synchronized (this) {
-					try {
-						while (progress.getProgress() > 0) {
-							progress.incrementProgressBy(-1);
-							wait(WAIT_TIME / 100);
+		if (timer == null) {
+			timer = new AsyncTask<Void, Void, Void>() {
+				@Override
+				protected Void doInBackground(Void... a) {
+					synchronized (this) {
+						try {
+							while (progress.getProgress() > 0) {
+								progress.incrementProgressBy(-1);
+								wait(WAIT_TIME / 100);
+							}
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
+					return null;
 				}
-				return null;
-			}
 
-			@Override
-			protected void onPostExecute(Void a) {
-				moveToNext();
-			}
-		}.execute();
+				@Override
+				protected void onPostExecute(Void a) {
+					timer = null;
+					moveToNext();
+				}
+			};
+
+			timer.execute();
+		}
 
 	}
 }

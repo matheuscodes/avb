@@ -3,6 +3,10 @@
     <color name="change_confirmed">#009900</color>
     <color name="change_removed">#990000</color>
     
+    <color name="trial_skipped">#44CCCCCC</color>
+    <color name="trial_half">#44999900</color>
+    <color name="trial_wrong">#44990000</color>
+    
     <color name="stats_good">#00FF00</color>
     <color name="stats_bad">#FF0000</color>
     <color name="stats_coverage">#FFFFFF</color>

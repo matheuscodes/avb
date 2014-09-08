@@ -301,7 +301,7 @@ public class BabelTower {
 		}
 	}
 
-	private static String getTranslationSynonyms(String key, String language) {
+	public static String getTranslationSynonyms(String key, String language) {
 		String result = null;
 		try {
 			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE_TEXT

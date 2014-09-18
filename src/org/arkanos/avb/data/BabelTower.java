@@ -368,4 +368,54 @@ public class BabelTower {
 			Log.e(TAG, e.toString());
 		}
 	}
+
+	public static void fillTranslationTrustLists(String language, List<Integer> amounts, List<Float> trusts) {
+		String sql = "SELECT COUNT(trusts) AS how_many,trusts "
+				+ "FROM (SELECT " + Translation.SENSE_KEY + ",AVG(" + Translation.TRUST + ") AS trusts "
+				+ "FROM " + Translation.TABLE + "_" + language + " "
+				+ "GROUP BY " + Translation.SENSE_KEY + ") "
+				+ "GROUP BY trusts ORDER BY trusts DESC;";
+		Cursor c = db_read.rawQuery(sql, null);
+		while (c.moveToNext()) {
+			int a = c.getInt(0);
+			float t = c.getFloat(1);
+			amounts.add(a);
+			trusts.add(t);
+		}
+		c.close();
+	}
+
+	public static void fillTranslationKnownLists(String language, List<Integer> amounts, List<Float> trusts) {
+		String sql = "SELECT COUNT(confidences) AS how_many,confidences "
+				+ "FROM (SELECT " + Translation.SENSE_KEY + ",AVG(" + Translation.CONFIDENCE + ") AS confidences "
+				+ "FROM " + Translation.TABLE + "_" + language + " "
+				+ "WHERE " + Translation.CONFIDENCE + "> 0 "
+				+ "GROUP BY " + Translation.SENSE_KEY + ") "
+				+ "GROUP BY confidences ORDER BY confidences DESC;";
+		Cursor c = db_read.rawQuery(sql, null);
+		while (c.moveToNext()) {
+			int a = c.getInt(0);
+			float t = c.getFloat(1);
+			amounts.add(a);
+			trusts.add(t);
+		}
+		c.close();
+	}
+
+	public static void fillTranslationUnknownLists(String language, List<Integer> amounts, List<Float> trusts) {
+		String sql = "SELECT COUNT(confidences) AS how_many,confidences "
+				+ "FROM (SELECT " + Translation.SENSE_KEY + ",AVG(" + Translation.CONFIDENCE + ") AS confidences "
+				+ "FROM " + Translation.TABLE + "_" + language + " "
+				+ "WHERE " + Translation.CONFIDENCE + "< 0 "
+				+ "GROUP BY " + Translation.SENSE_KEY + ") "
+				+ "GROUP BY confidences ORDER BY confidences DESC;";
+		Cursor c = db_read.rawQuery(sql, null);
+		while (c.moveToNext()) {
+			int a = c.getInt(0);
+			float t = c.getFloat(1);
+			amounts.add(a);
+			trusts.add(t);
+		}
+		c.close();
+	}
 }

@@ -1,10 +1,14 @@
 package org.arkanos.avb.ui;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.arkanos.avb.AVBApp;
 import org.arkanos.avb.R;
+import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.LanguageSettings;
+import org.arkanos.avb.data.WordnetImporter;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -13,6 +17,7 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.SweepGradient;
 import android.graphics.drawable.shapes.PathShape;
+import android.util.Log;
 import android.view.View;
 
 public class StatusWheel extends View {
@@ -45,8 +50,56 @@ public class StatusWheel extends View {
 		bad = new HashMap<String, SweepGradient>();
 		coverage = new HashMap<String, SweepGradient>();
 
-		createFakeData(LanguageSettings.SWEDISH);
-		createFakeData(LanguageSettings.GERMAN);
+		readData(LanguageSettings.SWEDISH);
+		readData(LanguageSettings.GERMAN);
+	}
+
+	private void readData(String language) {
+		Log.d(TAG, "Reading trusts for " + language);
+		LinkedList<Integer> li = new LinkedList<Integer>();
+		LinkedList<Float> lf = new LinkedList<Float>();
+		BabelTower.fillTranslationTrustLists(language, li, lf);
+		coverage.put(language, buildGradient(li, lf, 0xFFFFFFFF));
+		Log.d(TAG, "Read trusts for " + language);
+
+		Log.d(TAG, "Reading known for " + language);
+		li = new LinkedList<Integer>();
+		lf = new LinkedList<Float>();
+		BabelTower.fillTranslationKnownLists(language, li, lf);
+		good.put(language, buildGradient(li, lf, 0xFF00FF00));
+		Log.d(TAG, "Read known for " + language);
+
+		Log.d(TAG, "Reading unknown for " + language);
+		li = new LinkedList<Integer>();
+		lf = new LinkedList<Float>();
+		BabelTower.fillTranslationUnknownLists(language, li, lf);
+		bad.put(language, buildGradient(li, lf, 0xFFFF0000));
+		Log.d(TAG, "Read unknown for " + language);
+	}
+
+	private SweepGradient buildGradient(List<Integer> li, List<Float> lf, int color) {
+		float[] positions = new float[lf.size() + 2];
+		int[] colors = new int[lf.size() + 2];
+		int pos = 0;
+		float total = 0;
+		colors[pos] = color;
+		for (int value : li) {
+			float opacity = lf.remove(0);// TODO maybe removeFirst
+			if (opacity > 1f) {
+				opacity = 1f;
+			}
+			positions[pos] = total;
+			total += value / ((float) WordnetImporter.WN_TOTAL);
+			colors[pos] = colors[0] | ((int) (255 * opacity) << 24) & 0xFF000000;
+			Log.d(TAG, (int) (255 * opacity) + "/1/" + positions[pos] + " value: " + value);
+			++pos;
+		}
+		positions[pos] = total;
+		colors[pos++] = colors[0] & 0x00FFFFFF;
+		positions[pos] = 1f;
+		colors[pos] = colors[0] & 0x00FFFFFF;
+		Log.d(TAG, 0 + "/3/" + positions[pos]);
+		return new SweepGradient(0f, 0f, colors, positions);
 	}
 
 	private void createFakeData(String language) {

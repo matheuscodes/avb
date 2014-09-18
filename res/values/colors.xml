@@ -7,8 +7,8 @@
     <color name="trial_half">#44999900</color>
     <color name="trial_wrong">#44990000</color>
     
-    <color name="stats_good">#00FF00</color>
-    <color name="stats_bad">#FF0000</color>
-    <color name="stats_coverage">#FFFFFF</color>
+    <color name="stats_good">#FF00FF00</color>
+    <color name="stats_bad">#FFFF0000</color>
+    <color name="stats_coverage">#FFFFFFFF</color>
     <color name="stats_text">#FFFFFF</color>
 </resources>

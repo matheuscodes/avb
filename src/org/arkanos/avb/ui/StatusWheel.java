@@ -49,9 +49,9 @@ public class StatusWheel extends View {
 		good = new HashMap<String, SweepGradient>();
 		bad = new HashMap<String, SweepGradient>();
 		coverage = new HashMap<String, SweepGradient>();
-
-		readData(LanguageSettings.SWEDISH);
-		readData(LanguageSettings.GERMAN);
+		for (String language : LanguageSettings.getInstalledLanguages()) {
+			readData(language);
+		}
 	}
 
 	private void readData(String language) {
@@ -59,120 +59,47 @@ public class StatusWheel extends View {
 		LinkedList<Integer> li = new LinkedList<Integer>();
 		LinkedList<Float> lf = new LinkedList<Float>();
 		BabelTower.fillTranslationTrustLists(language, li, lf);
-		coverage.put(language, buildGradient(li, lf, 0xFFFFFFFF));
+		coverage.put(language, buildGradient(li, lf, 0xFFFFFFFF, 1f));
 		Log.d(TAG, "Read trusts for " + language);
 
 		Log.d(TAG, "Reading known for " + language);
 		li = new LinkedList<Integer>();
 		lf = new LinkedList<Float>();
 		BabelTower.fillTranslationKnownLists(language, li, lf);
-		good.put(language, buildGradient(li, lf, 0xFF00FF00));
+		good.put(language, buildGradient(li, lf, 0xFF00FF00, 0.5f));
 		Log.d(TAG, "Read known for " + language);
 
 		Log.d(TAG, "Reading unknown for " + language);
 		li = new LinkedList<Integer>();
 		lf = new LinkedList<Float>();
 		BabelTower.fillTranslationUnknownLists(language, li, lf);
-		bad.put(language, buildGradient(li, lf, 0xFFFF0000));
+		bad.put(language, buildGradient(li, lf, 0xFFFF0000, 0.5f));
 		Log.d(TAG, "Read unknown for " + language);
 	}
 
-	private SweepGradient buildGradient(List<Integer> li, List<Float> lf, int color) {
+	private SweepGradient buildGradient(List<Integer> li, List<Float> lf, int color, float correction) {
 		float[] positions = new float[lf.size() + 2];
 		int[] colors = new int[lf.size() + 2];
 		int pos = 0;
 		float total = 0;
 		colors[pos] = color;
 		for (int value : li) {
-			float opacity = lf.remove(0);// TODO maybe removeFirst
+			float opacity = Math.abs(lf.remove(0)) / correction;
 			if (opacity > 1f) {
 				opacity = 1f;
 			}
 			positions[pos] = total;
 			total += value / ((float) WordnetImporter.WN_TOTAL);
 			colors[pos] = colors[0] | ((int) (255 * opacity) << 24) & 0xFF000000;
-			Log.d(TAG, (int) (255 * opacity) + "/1/" + positions[pos] + " value: " + value);
+			// Log.d(TAG, (int) (255 * opacity) + "/1/" + positions[pos] + " value: " + value);
 			++pos;
 		}
 		positions[pos] = total;
 		colors[pos++] = colors[0] & 0x00FFFFFF;
 		positions[pos] = 1f;
 		colors[pos] = colors[0] & 0x00FFFFFF;
-		Log.d(TAG, 0 + "/3/" + positions[pos]);
+		// Log.d(TAG, 0 + "/3/" + positions[pos]);
 		return new SweepGradient(0f, 0f, colors, positions);
-	}
-
-	private void createFakeData(String language) {
-		float help1 = 0;
-		float help2 = 1;
-		int i = 2 + (int) (Math.random() * 5);
-		float[] positions = new float[i + 2];
-		int[] colors = new int[i + 2];
-		for (int j = 0; j < i; j++) {
-			positions[j] = help1;
-			int color = 0x00FF0000;
-			color |= ((int) (255 * help2) << 24) & 0xFF000000;
-			colors[j] = color;
-			help1 += Math.random() * (0.1f - help1);
-			if (help1 < 0)
-				help1 = 0;
-			help2 -= Math.random() * help2;
-			// Log.d(TAG, (colors[j] & 0x00FFFFFF) + "," + positions[j]);
-		}
-		positions[i] = help1 + 0.01f;
-		colors[i] = 0x00FF0000;
-		positions[i + 1] = 1f;
-		colors[i + 1] = 0x00FF0000;
-
-		bad.put(language, new SweepGradient(0f, 0f, colors, positions));
-
-		help1 = 0;
-		help2 = 1;
-		i = 2 + (int) (Math.random() * 10);
-		positions = new float[i + 2];
-		colors = new int[i + 2];
-		for (int j = 0; j < i; j++) {
-			positions[j] = help1;
-			int color = 0x0000FF00;
-			color |= ((int) (255 * help2) << 24) & 0xFF000000;
-			colors[j] = color;
-			help1 += Math.random() * (0.3f - help1);
-			if (help1 < 0)
-				help1 = 0;
-			help2 -= Math.random() * help2;
-			// Log.d(TAG, (colors[j] & 0x00FFFFFF) + "-" + positions[j]);
-		}
-		positions[i] = help1 + 0.01f;
-		colors[i] = 0x0000FF00;
-		positions[i + 1] = 1f;
-		colors[i + 1] = 0x0000FF00;
-
-		good.put(language, new SweepGradient(0f, 0f, colors, positions));
-
-		help1 = 0.3f;
-		help2 = 1;
-		i = 2 + (int) (Math.random() * 10);
-		positions = new float[i + 3];
-		colors = new int[i + 3];
-		positions[0] = 0f;
-		colors[0] = 0xFFFFFFFF;
-		for (int j = 1; j < i; j++) {
-			positions[j] = help1;
-			int color = 0x00FFFFFF;
-			color |= ((int) (255 * help2) << 24) & 0xFF000000;
-			colors[j] = color;
-			help1 += Math.random() * (0.99f - help1);
-			if (help1 < 0)
-				help1 = 0;
-			help2 -= Math.random() * help2;
-			// Log.d(TAG, (colors[j] & 0x00FFFFFF) + "/" + positions[j]);
-		}
-		positions[i + 1] = help1 + 0.01f;
-		colors[i + 1] = 0x00FFFFFF;
-		positions[i + 2] = 1f;
-		colors[i + 2] = 0x00FFFFFF;
-
-		coverage.put(language, new SweepGradient(0f, 0f, colors, positions));
 	}
 
 	private static PathShape buildRing(int size, int thickness) {

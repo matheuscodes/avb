@@ -26,6 +26,7 @@ public class Translation {
 	private String term;
 	private String grammar_class;
 	private float trust;
+	private float confidence;
 
 	@Override
 	public String toString() {
@@ -47,6 +48,8 @@ public class Translation {
 		// debug += term + "/";
 		this.grammar_class = c.getString(c.getColumnIndex(GRAMMAR));
 		// debug += grammar_class + "/";
+		this.confidence = c.getFloat(c.getColumnIndex(CONFIDENCE));
+		// debug += confidence + "/";
 		this.trust = c.getFloat(c.getColumnIndex(TRUST));
 		// debug += trust;
 		// Log.d("AVB-Translation", debug);
@@ -146,6 +149,14 @@ public class Translation {
 
 	public String getGrammar() {
 		return grammar_class;
+	}
+
+	public float getConfidence() {
+		return confidence;
+	}
+
+	public void changeConfidence(float value) {
+		confidence = (confidence + value) / 2;
 	}
 
 }

@@ -152,93 +152,88 @@ public class BabelTower {
 		return results;
 	}
 
-	private static final int BEST_KNOWN = 0;
-	private static final int AVERAGE_KNOWN = 1;
-	private static final int WORST_KNOWN = 2;
-
 	public static List<Translation> getPartition(int size, String language) {
-		Translation[][] results = new Translation[3][];
+		float c_max = 0, c_avg = 0, c_min = 0;
 		List<Translation> list = new LinkedList<Translation>();
+		List<Translation> average = new LinkedList<Translation>();
+		List<Translation> best = new LinkedList<Translation>();
+		List<Translation> worst = new LinkedList<Translation>();
 		Cursor c = db_read.rawQuery("SELECT"
 				+ " MAX(" + Translation.CONFIDENCE + "),"
 				+ " AVG(" + Translation.CONFIDENCE + "),"
-				+ " MIN(" + Translation.CONFIDENCE + "),"
-				+ " MAX(" + Translation.TRUST + "),"
-				+ " AVG(" + Translation.TRUST + "),"
-				+ " MIN(" + Translation.TRUST + ")"
+				+ " MIN(" + Translation.CONFIDENCE + ")"
 				+ " FROM " + Translation.TABLE + "_" + language + ";", null);
-
 		if (c.moveToFirst()) {
-			float c_max = c.getFloat(0);
-			float c_avg = c.getFloat(1);
-			float c_min = c.getFloat(2);
+			c_max = c.getFloat(0);
+			c_avg = c.getFloat(1);
+			c_min = c.getFloat(2);
+		}
+		c.close();
 
-			float t_max = c.getFloat(3);
-			float t_avg = c.getFloat(4);
-			float t_min = c.getFloat(5);
+		average = selectPartition(size, language, (c_avg - c_min) * 0.2f + c_min, (c_max - c_avg) * 0.80f + c_avg);
+		best = selectPartition(size, language, (c_max - c_avg) * 0.80f + c_avg, c_max);
+		worst = selectPartition(size, language, c_min, (c_avg - c_min) * 0.2f + c_min);
 
-			int count = size / 3;
-			results[BEST_KNOWN] = selectPartition(count, language, (c_max - c_avg) * 0.80f + c_avg, c_max, t_avg, t_max);
-
-			count = (size - results[BEST_KNOWN].length) / 2;
-			results[WORST_KNOWN] = selectPartition(count, language, c_min, (c_avg - c_min) * 0.2f + c_min, t_avg, t_max);
-
-			count = size - results[BEST_KNOWN].length - results[WORST_KNOWN].length;
-			results[AVERAGE_KNOWN] = selectPartition(count, language, c_avg - (c_avg - c_min) * 0.2f, (c_max - c_avg) * 0.2f + c_avg, t_min, t_max);
-
-			for (Translation t : results[BEST_KNOWN]) {
-				list.add(t);
-			}
-
-			for (Translation t : results[WORST_KNOWN]) {
-				list.add(t);
-			}
-
-			for (Translation t : results[AVERAGE_KNOWN]) {
-				list.add(t);
+		int count = 0;
+		if (average.size() <= size / 3) {
+			while (average.size() > 0) {
+				list.add(average.remove(0));
+				count++;
 			}
 		}
 
-		c.close();
+		if (best.size() <= size / 3) {
+			while (best.size() > 0) {
+				list.add(best.remove(0));
+				count++;
+			}
+		}
+
+		if (worst.size() <= size / 3) {
+			while (worst.size() > 0) {
+				list.add(worst.remove(0));
+				count++;
+			}
+		}
+		while (count < size && (best.size() > 0 || worst.size() > 0 || average.size() > 0)) {
+			if (average.size() > 0) {
+				list.add(average.remove(0));
+				count++;
+			}
+			if (best.size() > 0) {
+				list.add(best.remove(0));
+				count++;
+			}
+			if (worst.size() > 0) {
+				list.add(worst.remove(0));
+				count++;
+			}
+		}
+
 		return list;
 	}
 
-	private static Translation[] selectPartition(int count, String language, float c_min, float c_max, float t_min, float t_max) {
-		Translation[] result = new Translation[count];
-		int read = 0;
+	private static List<Translation> selectPartition(int count, String language, float c_min, float c_max) {
+		List<Translation> result = new LinkedList<Translation>();
 		try {
-			// Log.d("AVB-BabelTower", "Trying to fetch " + count + ".");
-			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE + "_" + language
-					+ " WHERE " + Translation.TRUST + " <= " + t_max
-					+ " AND " + Translation.TRUST + " >= " + t_min
-					+ " AND " + Translation.CONFIDENCE + " <= " + c_max
+			String sql = "SELECT * FROM " + Translation.TABLE + "_" + language
+					+ " WHERE " + Translation.CONFIDENCE + " <= " + c_max
 					+ " AND " + Translation.CONFIDENCE + " >= " + c_min
-					+ " LIMIT " + count + ";", null);
+					+ " LIMIT " + count + ";";
+			// Log.d(TAG, "SQL: " + sql);
+			// Log.d("AVB-BabelTower", "Trying to fetch " + count + ".");
+			Cursor c = db_read.rawQuery(sql, null);
 
 			if (c.moveToFirst()) {
 				// Log.d("AVB-BabelTower", "Fetching done.");
 				do {
 					// result[read] = BabelTower.getTranslation(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())), language);
 					// result[read++].setTerm(c.getString(c.getColumnIndex(Translation.Fields.TERM.toString())));
-					result[read++] = new Translation(c, language);
+					result.add(new Translation(c, language));
 				} while (c.moveToNext());
-				// Log.d("AVB-BabelTower", "Fetched " + read + ".");
-				if (result.length > count) {
-					int i = 0;
-					Translation[] copy = new Translation[read];
-					for (Translation t : result) {
-						if (t != null) {
-							copy[i++] = t;
-						}
-					}
-					c.close();
-					return copy;
-				}
-				c.close();
-				return result;
 			}
 			c.close();
-			return new Translation[0];
+			return result;
 		} catch (SQLiteException e) {
 			Log.e(TAG, e.toString());
 		}
@@ -369,6 +364,19 @@ public class BabelTower {
 		}
 	}
 
+	public static void saveTranslationConfidence(Translation t) {
+		String sql = "UPDATE " + Translation.TABLE + "_" + t.getLanguage()
+				+ " SET " + Translation.CONFIDENCE + " = " + t.getConfidence()
+				+ " WHERE " + Translation.SENSE_KEY + " = '" + t.getKey() + "'"
+				+ " AND " + Translation.TERM + " = '" + t.getTerm() + "';";
+
+		try {
+			db_write.execSQL(sql);
+		} catch (SQLiteException e) {
+			Log.e(TAG, e.toString());
+		}
+	}
+
 	public static void fillTranslationTrustLists(String language, List<Integer> amounts, List<Float> trusts) {
 		String sql = "SELECT COUNT(trusts) AS how_many,trusts "
 				+ "FROM (SELECT " + Translation.SENSE_KEY + ",AVG(" + Translation.TRUST + ") AS trusts "
@@ -408,7 +416,7 @@ public class BabelTower {
 				+ "FROM " + Translation.TABLE + "_" + language + " "
 				+ "WHERE " + Translation.CONFIDENCE + "< 0 "
 				+ "GROUP BY " + Translation.SENSE_KEY + ") "
-				+ "GROUP BY confidences ORDER BY confidences DESC;";
+				+ "GROUP BY confidences ORDER BY confidences ASC;";
 		Cursor c = db_read.rawQuery(sql, null);
 		while (c.moveToNext()) {
 			int a = c.getInt(0);

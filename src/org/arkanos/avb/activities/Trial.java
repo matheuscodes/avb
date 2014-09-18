@@ -36,9 +36,9 @@ import android.widget.TextView;
 public class Trial extends Activity {
 
 	private static final int WAIT_TIME = 30000; // 30 sec.
-	private static final int SIZE = 18;
-	private static final int PARTITION = 3 * 3 * SIZE;
 	private static final int ALTERNATIVES = 4;
+	private static final int SIZE = 18;
+	private static final int PARTITION = ALTERNATIVES * ALTERNATIVES * SIZE;
 
 	public static final String LANGUAGE = "language";
 
@@ -63,7 +63,7 @@ public class Trial extends Activity {
 			language = intent.getStringExtra(LANGUAGE);
 			startUpTest();
 		}
-		Log.e("AVB-Trial", "Created but no intent with information.");
+		Log.i("AVB-Trial", "Created but no intent with information.");
 	}
 
 	@Override
@@ -97,52 +97,78 @@ public class Trial extends Activity {
 			protected void onPostExecute(List<Translation> partition) {
 				others = new HashMap<Translation, List<Translation>>();
 				selected = new LinkedList<Translation>();
+				// Log.d("AVB-Trial", "Antes " + partition.size());
 				while (selected.size() < SIZE && partition.size() > 0) {
 					Translation t = partition.remove((int) (Math.random() * (partition.size() - 1)));
-					selected.add(t);
+					if (t != null) {
+						selected.add(t);
+						// Log.d("AVB-Trial", "Adding " + t);
+					}
 				}
+				// Log.d("AVB-Trial", "Depois " + partition.size());
 
 				for (Translation t : selected) {
 					List<Translation> lt = new LinkedList<Translation>();
 					// TODO check for "right" alternatives in the "wrong" place.
 					// TODO get one antonym
+					// Log.d("AVB-Trial", "Fazendo " + partition.size() + " <> " + t);
 					int i = ALTERNATIVES - 1;
 					List<Translation> bin = new LinkedList<Translation>();
-					while (i > 0) {
+					while (i > 0 && partition.size() > 0) {
 						if (partition.size() <= i) {
-							for (Translation rest : partition) {
-								lt.add(rest);
-								--i;
-							}
-						}
-						else {
-							Translation possible = partition.remove((int) (Math.random() * (partition.size() - 1)));
-							if (t.getKey().equals(possible.getKey())) {
-								bin.add(possible);
-							}
-							else {
-								boolean exists = false;
-								for (Translation copy : lt) {
-									if (copy.getTerm().equals(possible.getTerm())) {
-										exists = true;
-									}
-								}
-								if (exists) {
-									bin.add(possible);
-								}
-								else {
-									lt.add(possible);
+							Translation rest = partition.remove(0);
+							do {
+								if (rest != null) {
+									// Log.d("AVB-Trial", "Putting rest " + rest);
+									lt.add(rest);
 									--i;
 								}
+								rest = partition.remove(0);
+							} while (partition.size() > 0);
+						}
+						else {
+							int bla = (int) (Math.random() * (partition.size() - 1));
+							Translation possible = partition.remove(bla);
+							if (possible != null) {
+								if (t.getKey().equals(possible.getKey())) {// FIXME NPE
+									bin.add(possible);
+									// Log.d("AVB-Trial", "Discarding same key " + possible + " <> " + t);
+								}
+								else {
+									boolean exists = false;
+									for (Translation copy : lt) {
+										if (copy.getTerm().equals(possible.getTerm())) {
+											exists = true;
+										}
+									}
+									if (exists) {
+										bin.add(possible);
+										// Log.d("AVB-Trial", "Discarding same term " + possible + " <> " + t);
+									}
+									else {
+										lt.add(possible);
+										--i;
+									}
+								}
+							}
+							else {
+								// Log.d("AVB-Trial", "Essa porra é nula " + partition.size() + " <> " + t + " <> " + bla);
 							}
 						}
-
 					}
 					/* Recovering the discarded */
 					for (Translation discarded : bin) {
 						partition.add(discarded);
+						// Log.d("AVB-Trial", "Putting back " + discarded);
 					}
-					others.put(t, lt);
+					bin = new LinkedList<Translation>();
+
+					if (lt.size() >= ALTERNATIVES - 1) {
+						others.put(t, lt);
+					}
+					else {
+						// Log.d("AVB-Trial", "Ignoring " + t + " <> " + lt.size());
+					}
 				}
 
 				dialog.finishIt();
@@ -227,23 +253,27 @@ public class Trial extends Activity {
 		}
 	}
 
-	private void createNewStep(final Translation t) {
+	private void createNewStep(final Translation answer) {
+		List<Translation> alternatives = others.get(answer);
+		if (alternatives == null) {
+			moveToNext();
+			return;
+		}
+
 		final RelativeLayout content = (RelativeLayout) this.findViewById(R.id.trial_content);
 		content.removeAllViews();
 		getLayoutInflater().inflate(R.layout.trial_multiple, content);
 
-		Sense s = Dictionary.getSense(t.getKey());
+		Sense s = Dictionary.getSense(answer.getKey());
 		getLayoutInflater().inflate(R.layout.dictionary_entry, (RelativeLayout) this.findViewById(R.id.trial_entry));
 		DictionaryEntryHelper.fillEntry(content, s);
 
-		List<Translation> alternatives = others.get(t);
-
 		final int rightone = (int) (Math.random() * (ALTERNATIVES - 1));
 		if (rightone >= alternatives.size() - 1) {
-			alternatives.add(t);
+			alternatives.add(answer);
 		}
 		else {
-			alternatives.add(rightone, t);
+			alternatives.add(rightone, answer);
 		}
 		((RadioButton) content.findViewById(R.id.trial_option0)).setText(alternatives.remove(0).getTerm().replace('_', ' '));
 		((RadioButton) content.findViewById(R.id.trial_option1)).setText(alternatives.remove(0).getTerm().replace('_', ' '));
@@ -273,12 +303,16 @@ public class Trial extends Activity {
 				}
 				RadioGroup rg = (RadioGroup) content.findViewById(R.id.trial_options);
 				if (rg.getCheckedRadioButtonId() == correct) {
+					answer.changeConfidence(1f);
+					BabelTower.saveTranslationConfidence(answer);
 					Log.d("AVB-Trial", "Correct Selection!");
 				}
 				else {
 					RadioButton rb = (RadioButton) content.findViewById(rg.getCheckedRadioButtonId());
-					incorrect.put(t, rb.getText().toString());
-					Log.d("AVB-Trial", "Wrong, expected: " + t.getTerm());
+					incorrect.put(answer, rb.getText().toString());
+					answer.changeConfidence(-1f);
+					BabelTower.saveTranslationConfidence(answer);
+					Log.d("AVB-Trial", "Wrong, expected: " + answer.getTerm());
 				}
 				moveToNext();
 			}
@@ -309,6 +343,8 @@ public class Trial extends Activity {
 				@Override
 				protected void onPostExecute(Void a) {
 					timer = null;
+					answer.changeConfidence(-1f);
+					BabelTower.saveTranslationConfidence(answer);
 					moveToNext();
 				}
 			};

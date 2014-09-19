@@ -3,6 +3,7 @@ package org.arkanos.avb.fragments;
 import org.arkanos.avb.R;
 import org.arkanos.avb.activities.Change;
 import org.arkanos.avb.activities.Trial;
+import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.LanguageSettings;
 import org.arkanos.avb.ui.StatusWheel;
 
@@ -59,8 +60,8 @@ public class Stats extends Fragment {
 				@Override
 				public void onClick(View arg0) {
 					Intent intent = new Intent(rootView.getContext(), Change.class);
-					intent.putExtra(Change.LANGUAGE, l);// TODO make a constant
-					intent.putExtra(Change.KEY, "v02588280");// TODO make a constant
+					intent.putExtra(Change.LANGUAGE, l);
+					intent.putExtra(Change.KEY, BabelTower.getSenseToTranslate(l));
 					startActivity(intent);
 				}
 			});

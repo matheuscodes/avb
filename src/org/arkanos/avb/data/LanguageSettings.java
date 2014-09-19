@@ -31,22 +31,43 @@ public class LanguageSettings {
 
 	public static final String GERMAN = "de";
 	public static final String SWEDISH = "sv";
+	public static final String NORWEGIAN = "no";
+	public static final String PORTUGUESE = "pt";
+	public static final String POLISH = "pl";
 
 	private static ImageGetter flags = null;
 
 	public static void upgradeFrom(int version, SQLiteDatabase sql_db) {
+		// TODO version reduction
+		ContentValues language = null;
 		if (version < 23) {
 			sql_db.execSQL("CREATE TABLE " + TABLE + "("
 					+ LANGUAGE + " TEXT PRIMARY KEY,"
 					+ INSTALLED + " TEXT NOT NULL DEFAULT 'f');");
 
-			ContentValues language = new ContentValues();
-			language.put(LANGUAGE, "sv");
+			language = new ContentValues();
+			language.put(LANGUAGE, SWEDISH);
 			language.put(INSTALLED, "f");
 			sql_db.insert(TABLE, null, language);
 
 			language = new ContentValues();
-			language.put(LANGUAGE, "de");
+			language.put(LANGUAGE, GERMAN);
+			language.put(INSTALLED, "f");
+			sql_db.insert(TABLE, null, language);
+		}
+		if (version < 24) {
+			language = new ContentValues();
+			language.put(LANGUAGE, NORWEGIAN);
+			language.put(INSTALLED, "f");
+			sql_db.insert(TABLE, null, language);
+
+			language = new ContentValues();
+			language.put(LANGUAGE, PORTUGUESE);
+			language.put(INSTALLED, "f");
+			sql_db.insert(TABLE, null, language);
+
+			language = new ContentValues();
+			language.put(LANGUAGE, POLISH);
 			language.put(INSTALLED, "f");
 			sql_db.insert(TABLE, null, language);
 		}
@@ -59,15 +80,28 @@ public class LanguageSettings {
 		db_write = dbh.getWritableDatabase();
 	}
 
-	public static List<String> getInstalledLanguages() {
+	public static List<String> getAllLanguages() {
 		List<String> states = new LinkedList<String>();
-		String sql = "SELECT " + LANGUAGE + "," + INSTALLED + " FROM " + TABLE + ";";
+		String sql = "SELECT " + LANGUAGE + " FROM " + TABLE + ";";
 		try {
 			Cursor c = db_write.rawQuery(sql, null);
 			while (c.moveToNext()) {
-				if (c.getString(c.getColumnIndex(INSTALLED)).equals("t")) {
-					states.add(c.getString(c.getColumnIndex(LANGUAGE)));
-				}
+				states.add(c.getString(c.getColumnIndex(LANGUAGE)));
+			}
+			c.close();
+		} catch (SQLiteException e) {
+			Log.e(TAG, e.toString());
+		}
+		return states;
+	}
+
+	public static List<String> getInstalledLanguages() {
+		List<String> states = new LinkedList<String>();
+		String sql = "SELECT " + LANGUAGE + "," + INSTALLED + " FROM " + TABLE + " WHERE " + INSTALLED + " = 't';";
+		try {
+			Cursor c = db_write.rawQuery(sql, null);
+			while (c.moveToNext()) {
+				states.add(c.getString(c.getColumnIndex(LANGUAGE)));
 			}
 			c.close();
 		} catch (SQLiteException e) {
@@ -132,6 +166,15 @@ public class LanguageSettings {
 					if (source.equals(GERMAN))
 						d = c.getResources().getDrawable(R.drawable.flag_de);
 
+					if (source.equals(NORWEGIAN))
+						d = c.getResources().getDrawable(R.drawable.flag_no);
+
+					if (source.equals(PORTUGUESE))
+						d = c.getResources().getDrawable(R.drawable.flag_ptbr);
+
+					if (source.equals(POLISH))
+						d = c.getResources().getDrawable(R.drawable.flag_pl);
+
 					d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
 					return d;
 				}
@@ -145,6 +188,12 @@ public class LanguageSettings {
 			return c.getString(R.string.languages_de_pretty);
 		if (l.equals(LanguageSettings.SWEDISH))
 			return c.getString(R.string.languages_sv_pretty);
+		if (l.equals(LanguageSettings.NORWEGIAN))
+			return c.getString(R.string.languages_no_pretty);
+		if (l.equals(LanguageSettings.PORTUGUESE))
+			return c.getString(R.string.languages_pt_pretty);
+		if (l.equals(LanguageSettings.POLISH))
+			return c.getString(R.string.languages_pl_pretty);
 		return "";
 	}
 }

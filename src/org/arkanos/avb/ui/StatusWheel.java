@@ -89,7 +89,7 @@ public class StatusWheel extends View {
 				opacity = 1f;
 			}
 			positions[pos] = total;
-			total += value / ((float) WordnetImporter.WN_TOTAL);
+			total += value / (WordnetImporter.WN_TOTAL * correction);
 			colors[pos] = colors[0] | ((int) (255 * opacity) << 24) & 0xFF000000;
 			// Log.d(TAG, (int) (255 * opacity) + "/1/" + positions[pos] + " value: " + value);
 			++pos;

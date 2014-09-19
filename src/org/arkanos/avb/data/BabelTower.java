@@ -426,4 +426,18 @@ public class BabelTower {
 		}
 		c.close();
 	}
+
+	public static String getSenseToTranslate(String language) {
+		String sql = "SELECT MAX(" + Sense.Fields.PRIORITY + ")," + Sense.Fields.SENSE + " "
+				+ "FROM " + Sense.TABLE + " LEFT JOIN " + Translation.TABLE + "_" + language + " "
+				+ "ON " + Sense.Fields.SENSE + " = " + Translation.SENSE_KEY + " "
+				+ "WHERE " + Translation.SENSE_KEY + " IS NULL;";
+		String result = null;
+		Cursor c = db_read.rawQuery(sql, null);
+		if (c.moveToFirst()) {
+			result = c.getString(c.getColumnIndex(Sense.Fields.SENSE.toString()));
+		}
+		c.close();
+		return result;
+	}
 }

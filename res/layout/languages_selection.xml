@@ -29,7 +29,37 @@
             android:drawablePadding="5dp"
             android:text="@string/languages_de_pretty"
             android:textAppearance="?android:attr/textAppearanceLarge" />
-        
+            
+        <CheckBox
+            android:id="@+id/use_no"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:drawableLeft="@drawable/flag_no"
+            android:drawablePadding="5dp"
+            android:text="@string/languages_no_pretty"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+            
+        <CheckBox
+            android:id="@+id/use_pt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:drawableLeft="@drawable/flag_ptbr"
+            android:drawablePadding="5dp"
+            android:text="@string/languages_pt_pretty"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+            
+        <CheckBox
+            android:id="@+id/use_pl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:drawableLeft="@drawable/flag_pl"
+            android:drawablePadding="5dp"
+            android:text="@string/languages_pl_pretty"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+            
     </LinearLayout>
     
 </ScrollView>

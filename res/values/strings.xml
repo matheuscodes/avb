@@ -77,6 +77,9 @@
     <string name="languages_tab">Languages</string>
     <string name="languages_sv_pretty">Swedish</string>
     <string name="languages_de_pretty">German</string>
+    <string name="languages_no_pretty">Norwegian</string>
+    <string name="languages_pt_pretty">Portuguese</string>
+    <string name="languages_pl_pretty">Polish</string>
     
     <!-- Translations Settings -->
     <string name="de_femininum">Femininum</string>

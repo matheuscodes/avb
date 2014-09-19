@@ -26,11 +26,21 @@ public class Languages extends Fragment {
 
 		final View rootView = inflater.inflate(R.layout.languages_selection, container, false);
 
+		// TODO use a generic building system based on LanguageSettings.getAllLanguages()
 		/** SV **/
 		configureCheckbox(rootView, R.id.use_sv, states, LanguageSettings.SWEDISH);
 
 		/** DE **/
 		configureCheckbox(rootView, R.id.use_de, states, LanguageSettings.GERMAN);
+
+		/** NO **/
+		configureCheckbox(rootView, R.id.use_no, states, LanguageSettings.NORWEGIAN);
+
+		/** PT **/
+		configureCheckbox(rootView, R.id.use_pt, states, LanguageSettings.PORTUGUESE);
+
+		/** PL **/
+		configureCheckbox(rootView, R.id.use_pl, states, LanguageSettings.POLISH);
 
 		return rootView;
 	}

@@ -377,20 +377,23 @@ public class BabelTower {
 		}
 	}
 
-	public static void fillTranslationTrustLists(String language, List<Integer> amounts, List<Float> trusts) {
+	public static int fillTranslationTrustLists(String language, List<Integer> amounts, List<Float> trusts) {
 		String sql = "SELECT COUNT(trusts) AS how_many,trusts "
 				+ "FROM (SELECT " + Translation.SENSE_KEY + ",AVG(" + Translation.TRUST + ") AS trusts "
 				+ "FROM " + Translation.TABLE + "_" + language + " "
 				+ "GROUP BY " + Translation.SENSE_KEY + ") "
 				+ "GROUP BY trusts ORDER BY trusts DESC;";
 		Cursor c = db_read.rawQuery(sql, null);
+		int total = 0;
 		while (c.moveToNext()) {
 			int a = c.getInt(0);
 			float t = c.getFloat(1);
 			amounts.add(a);
 			trusts.add(t);
+			total += a;
 		}
 		c.close();
+		return total;
 	}
 
 	public static void fillTranslationKnownLists(String language, List<Integer> amounts, List<Float> trusts) {

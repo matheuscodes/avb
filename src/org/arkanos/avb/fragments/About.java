@@ -18,8 +18,8 @@ public class About extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-		TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+		View rootView = inflater.inflate(R.layout.about, container, false);
+		TextView textView = (TextView) rootView.findViewById(R.id.about_text);
 		String content = "";
 		content += getString(R.string.copyright);
 		content += getString(R.string.app_version);

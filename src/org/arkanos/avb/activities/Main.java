@@ -32,8 +32,8 @@ public class Main extends Activity implements ActionBar.TabListener {
 			Dictionary.initialize(this);
 			BabelTower.initialize(this);
 		}
-		// Set up the action bar.
 
+		// Set up the action bar.
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 

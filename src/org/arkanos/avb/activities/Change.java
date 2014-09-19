@@ -79,6 +79,7 @@ public class Change extends Activity {
 
 				final TextView tv = new TextView(this);
 				tv.setText(t.getTerm().replace('_', ' '));
+				tv.setMinHeight(button_height);
 				tr.addView(tv, new TableRow.LayoutParams(
 						TableRow.LayoutParams.MATCH_PARENT,
 						TableRow.LayoutParams.WRAP_CONTENT,
@@ -161,6 +162,7 @@ public class Change extends Activity {
 
 							TextView added = new TextView(v.getContext());
 							added.setText(text);
+							added.setMinHeight(button_height);
 							added.setTextColor(getResources().getColor(R.color.change_confirmed));
 							extra_row.addView(added);
 						}

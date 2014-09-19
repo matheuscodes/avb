@@ -51,7 +51,7 @@
     <string name="trial_load">Loading data&#8230;</string>
     <string name="trial_load_text">Please be patient.</string>
     <string name="trial_report_intro">Here are the incorrect answers:</string>
-    <string name="trial_report_fix">Fix data</string>
+    <string name="trial_report_fix">See data</string>
     <string name="trial_report_skipped">
         <![CDATA[
         	The answer is <u>{correct}</u>.

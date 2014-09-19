@@ -188,67 +188,73 @@ public class Trial extends Activity {
 				timer.cancel(true);
 				timer = null;
 			}
-			final RelativeLayout content = (RelativeLayout) this.findViewById(R.id.trial_super_master);
-			content.removeAllViews();
-			getLayoutInflater().inflate(R.layout.trial_report, content);
-			TableLayout table = (TableLayout) content.findViewById(R.id.trial_report_content);
-			for (Map.Entry<Translation, String> wrong_one : incorrect.entrySet()) {
-				final Translation right = wrong_one.getKey();
-				Sense s = Dictionary.getSense(right.getKey());
-				String all = BabelTower.getTranslationSynonyms(right.getKey(), language);
-				String given = wrong_one.getValue();
+			if (incorrect.size() <= 0) {
+				this.finish();
+			}
+			else {
+				final RelativeLayout content = (RelativeLayout) this.findViewById(R.id.trial_super_master);
+				content.removeAllViews();
 
-				TableRow tr = new TableRow(this);
-				TextView tv = new TextView(this);
+				getLayoutInflater().inflate(R.layout.trial_report, content);
+				TableLayout table = (TableLayout) content.findViewById(R.id.trial_report_content);
+				for (Map.Entry<Translation, String> wrong_one : incorrect.entrySet()) {
+					final Translation right = wrong_one.getKey();
+					Sense s = Dictionary.getSense(right.getKey());
+					String all = BabelTower.getTranslationSynonyms(right.getKey(), language);
+					String given = wrong_one.getValue();
 
-				String sentence = "<b>" + s.getHead().replace('_', ' ') + ":</b><br/>";
-				if (given.equals(getString(R.string.trial_dont_know))) {
-					sentence += getString(R.string.trial_report_skipped);
-					tr.setBackgroundColor(getResources().getColor(R.color.trial_skipped));
-				}
-				else if (all.toLowerCase(Locale.getDefault()).contains(given.toLowerCase(Locale.getDefault()))) {
-					sentence += getString(R.string.trial_report_half);
-					tr.setBackgroundColor(getResources().getColor(R.color.trial_half));
-				}
-				else {
-					sentence += getString(R.string.trial_report_wrong);
-					tr.setBackgroundColor(getResources().getColor(R.color.trial_wrong));
-				}
-				sentence = sentence.replace("{wrong}", given);
-				sentence = sentence.replace("{correct}", right.getTerm().replace('_', ' '));
-				tv.setText(Html.fromHtml(sentence));
-				tr.addView(tv, new TableRow.LayoutParams(
-						TableRow.LayoutParams.MATCH_PARENT,
-						TableRow.LayoutParams.WRAP_CONTENT,
-						1.0f));
-				tv.setGravity(Gravity.CENTER_VERTICAL);
+					TableRow tr = new TableRow(this);
+					TextView tv = new TextView(this);
 
-				int button_height = (int) (getResources().getDisplayMetrics().density * 40 + 0.5f);
-				final Button fix_button = new Button(this, null, android.R.attr.buttonStyleSmall);
-				fix_button.setText(this.getString(R.string.trial_report_fix));
-				fix_button.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, button_height));
-				fix_button.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View arg0) {
-						Intent intent = new Intent(content.getContext(), Change.class);
-						intent.putExtra(Change.LANGUAGE, language);
-						intent.putExtra(Change.KEY, right.getKey());
-						startActivity(intent);
+					String sentence = "<b>" + s.getHead().replace('_', ' ') + ":</b><br/>";
+					if (given.equals(getString(R.string.trial_dont_know))) {
+						sentence += getString(R.string.trial_report_skipped);
+						tr.setBackgroundColor(getResources().getColor(R.color.trial_skipped));
 					}
-				});
+					else if (all.toLowerCase(Locale.getDefault()).contains(given.toLowerCase(Locale.getDefault()))) {
+						sentence += getString(R.string.trial_report_half);
+						tr.setBackgroundColor(getResources().getColor(R.color.trial_half));
+					}
+					else {
+						sentence += getString(R.string.trial_report_wrong);
+						tr.setBackgroundColor(getResources().getColor(R.color.trial_wrong));
+					}
+					sentence = sentence.replace("{wrong}", given);
+					sentence = sentence.replace("{correct}", right.getTerm().replace('_', ' '));
+					tv.setText(Html.fromHtml(sentence));
+					tr.addView(tv, new TableRow.LayoutParams(
+							TableRow.LayoutParams.MATCH_PARENT,
+							TableRow.LayoutParams.WRAP_CONTENT,
+							1.0f));
+					tv.setGravity(Gravity.CENTER_VERTICAL);
 
-				tr.addView(fix_button, new TableRow.LayoutParams(
-						TableRow.LayoutParams.WRAP_CONTENT,
-						TableRow.LayoutParams.WRAP_CONTENT,
-						0.1f));
+					int button_height = (int) (getResources().getDisplayMetrics().density * 40 + 0.5f);
+					final Button fix_button = new Button(this, null, android.R.attr.buttonStyleSmall);
+					fix_button.setText(this.getString(R.string.trial_report_fix));
+					fix_button.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, button_height));
+					fix_button.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View arg0) {
+							Intent intent = new Intent(content.getContext(), Change.class);
+							intent.putExtra(Change.LANGUAGE, language);
+							intent.putExtra(Change.KEY, right.getKey());
+							startActivity(intent);
+						}
+					});
 
-				tr.setGravity(Gravity.CENTER_VERTICAL);
-				tr.setVerticalGravity(Gravity.CENTER_VERTICAL);
+					tr.addView(fix_button, new TableRow.LayoutParams(
+							TableRow.LayoutParams.WRAP_CONTENT,
+							TableRow.LayoutParams.WRAP_CONTENT,
+							0.1f));
 
-				table.addView(tr, new TableLayout.LayoutParams(
-						TableRow.LayoutParams.MATCH_PARENT,
-						TableRow.LayoutParams.WRAP_CONTENT,
-						1.0f));
+					tr.setGravity(Gravity.CENTER_VERTICAL);
+					tr.setVerticalGravity(Gravity.CENTER_VERTICAL);
+
+					table.addView(tr, new TableLayout.LayoutParams(
+							TableRow.LayoutParams.MATCH_PARENT,
+							TableRow.LayoutParams.WRAP_CONTENT,
+							1.0f));
+				}
 			}
 		}
 	}
@@ -268,8 +274,8 @@ public class Trial extends Activity {
 		getLayoutInflater().inflate(R.layout.dictionary_entry, (RelativeLayout) this.findViewById(R.id.trial_entry));
 		DictionaryEntryHelper.fillEntry(content, s);
 
-		final int rightone = (int) (Math.random() * (ALTERNATIVES - 1));
-		if (rightone >= alternatives.size() - 1) {
+		final int rightone = (int) Math.round((Math.random() * (ALTERNATIVES - 1)));
+		if (rightone >= alternatives.size()) {
 			alternatives.add(answer);
 		}
 		else {
@@ -299,6 +305,7 @@ public class Trial extends Activity {
 					correct = R.id.trial_option3;
 					break;
 				default:
+					Log.e("AVB-Trial", "No choice, this should never come.");
 					break;
 				}
 				RadioGroup rg = (RadioGroup) content.findViewById(R.id.trial_options);

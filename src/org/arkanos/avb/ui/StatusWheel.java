@@ -133,6 +133,7 @@ public class StatusWheel extends View {
 		}
 		positions[pos] = total;
 		colors[pos++] = colors[0] & 0x00FFFFFF;
+		// Log.d(TAG, 0 + "/2/" + positions[pos]);
 		positions[pos] = 1f;
 		colors[pos] = colors[0] & 0x00FFFFFF;
 		// Log.d(TAG, 0 + "/3/" + positions[pos]);

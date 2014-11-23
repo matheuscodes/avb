@@ -36,6 +36,9 @@ public class AVBApp extends Application {
 	public static final String TAG = "AVB-";
 	private static boolean failed = false;
 
+	/**
+	 * @see Application#onCreate()
+	 */
 	@Override
 	public void onCreate() {
 		super.onCreate();

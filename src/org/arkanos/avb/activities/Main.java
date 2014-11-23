@@ -1,3 +1,22 @@
+/**
+ * Copyright (C) 2014 Matheus Borges Teixeira
+ * 
+ * This is a part of Arkanos Vocabulary Builder (AVB)
+ * AVB is an Android application to improve vocabulary on foreign languages.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.arkanos.avb.activities;
 
 import org.arkanos.avb.AVBApp;
@@ -18,10 +37,19 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.view.Menu;
 
+/**
+ * Main activity that routes to all functionalities.
+ * 
+ * @version 1.0
+ * @author Matheus Borges Teixeira
+ */
 public class Main extends Activity implements ActionBar.TabListener {
 
 	Fragment[] tabs = null;
 
+	/**
+	 * @see Activity#onCreate(Bundle)
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -84,23 +112,35 @@ public class Main extends Activity implements ActionBar.TabListener {
 		/** End **/
 	}
 
+	/**
+	 * @see Activity#onSavedInstanceState(Bundle)
+	 */
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt("tab", getActionBar().getSelectedNavigationIndex());
 	}
 
+	/**
+	 * @see Activity#onCreateOptionsMenu(Menu)
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		SearchBoxHelper.activateBox(this, menu);
 		return true;
 	}
 
+	/**
+	 * @see ActionBar.TabListener#onTabReselected(Tab, FragmentTransaction)
+	 */
 	@Override
 	public void onTabReselected(Tab t, FragmentTransaction ft) {
 		/** Do nothing **/
 	}
 
+	/**
+	 * @see ActionBar.TabListener#onTabSelected(Tab, FragmentTransaction)
+	 */
 	@Override
 	public void onTabSelected(Tab t, FragmentTransaction ft) {
 		if (tabs != null && t != null && tabs[t.getPosition()] != null) {
@@ -109,6 +149,9 @@ public class Main extends Activity implements ActionBar.TabListener {
 		}
 	}
 
+	/**
+	 * @see ActionBar.TabListener#onTabUnselected(Tab, FragmentTransaction)
+	 */
 	@Override
 	public void onTabUnselected(Tab t, FragmentTransaction ft) {
 		if (tabs != null && t != null && tabs[t.getPosition()] != null) {

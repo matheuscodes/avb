@@ -1,7 +1,27 @@
+/**
+ * Copyright (C) 2014 Matheus Borges Teixeira
+ * 
+ * This is a part of Arkanos Vocabulary Builder (AVB)
+ * AVB is an Android application to improve vocabulary on foreign languages.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.arkanos.avb.activities;
 
 import java.util.List;
 
+import org.arkanos.avb.AVBApp;
 import org.arkanos.avb.R;
 import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.Dictionary;
@@ -24,11 +44,22 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+/**
+ * Activity to change, add or remove translations.
+ * 
+ * @version 1.0
+ * @author Matheus Borges Teixeira
+ */
 public class Change extends Activity {
 
+	/** String key for passing the language **/
 	public static final String LANGUAGE = "language";
+	/** String key for passing the sense **/
 	public static final String KEY = "key";
 
+	/**
+	 * @see Activity#onCreate(Bundle)
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -38,17 +69,25 @@ public class Change extends Activity {
 		if (intent != null) {
 			handleIntent(intent);
 		}
-		Log.e("AVB-Change", "Created but no intent with information.");
+		Log.e(AVBApp.TAG + "Change", "Created but no intent with information.");
 	}
 
+	/**
+	 * @see Activity#onNewIntent(Intent)
+	 */
 	@Override
 	protected void onNewIntent(Intent intent) {
 		if (intent != null) {
 			handleIntent(intent);
 		}
-		Log.e("AVB-Change", "Hope this never happens.");
+		Log.e(AVBApp.TAG + "Change", "Hope this never happens.");
 	}
 
+	/**
+	 * Creates the activity based on a given intent.
+	 * 
+	 * @param intent defines two configuration parameters: sense and language.
+	 */
 	private void handleIntent(Intent intent) {
 		final String language = intent.getStringExtra(LANGUAGE);
 		final String sense_key = intent.getStringExtra(KEY);

@@ -1,3 +1,22 @@
+/**
+ * Copyright (C) 2014 Matheus Borges Teixeira
+ * 
+ * This is a part of Arkanos Vocabulary Builder (AVB)
+ * AVB is an Android application to improve vocabulary on foreign languages.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.arkanos.avb.activities;
 
 import java.util.HashMap;
@@ -6,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.arkanos.avb.AVBApp;
 import org.arkanos.avb.R;
 import org.arkanos.avb.data.BabelTower;
 import org.arkanos.avb.data.Dictionary;
@@ -33,24 +53,40 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+/**
+ * Activity to test the users knowledge.
+ * 
+ * @version 1.0
+ * @author Matheus Borges Teixeira
+ */
 public class Trial extends Activity {
 
-	private static final int WAIT_TIME = 30000; // 30 sec.
+	/** Time for the user to select an answer **/
+	private static final int WAIT_TIME = 30000; // 30 seconds.
+	/** Number of alternatives to select aside the "I don't know" **/
 	private static final int ALTERNATIVES = 4;
+	/** Base for calculating a partition size **/
 	private static final int SIZE = 18;
+	/** Total amount of items inside a partition **/
 	private static final int PARTITION = ALTERNATIVES * ALTERNATIVES * SIZE;
 
+	/** String key for passing the language **/
 	public static final String LANGUAGE = "language";
 
+	/** Selection to be used in the test as correct items **/
 	private List<Translation> selected;
+	/** Incorrect alternatives for each translation **/
 	private HashMap<Translation, List<Translation>> others;
-
+	/** List of translations which a user answered incorrectly **/
 	private HashMap<Translation, String> incorrect;
-
+	/** Actual language being used in the activity **/
 	private String language = null;
-
+	/** Dummy timer **/
 	private AsyncTask<Void, Void, Void> timer = null;
 
+	/**
+	 * @see Activity#onCreate(Bundle)
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -63,21 +99,26 @@ public class Trial extends Activity {
 			language = intent.getStringExtra(LANGUAGE);
 			startUpTest();
 		}
-		Log.i("AVB-Trial", "Created but no intent with information.");
+		Log.i(AVBApp.TAG + "Trial", "Created but no intent with information.");
 	}
 
+	/**
+	 * @see Activity#onNewIntent(Intent)
+	 */
 	@Override
 	protected void onNewIntent(Intent intent) {
 		if (intent != null) {
 			language = intent.getStringExtra(LANGUAGE);
 			startUpTest();
 		}
-		Log.e("AVB-Trial", "Hope this never happens.");
+		Log.e(AVBApp.TAG + "Trial", "Hope this never happens.");
 	}
 
+	/**
+	 * Selects the content of the test and configures the alternatives.
+	 * Most of the computation is performed in the background.
+	 */
 	private synchronized void startUpTest() {
-		// BabelTower.prepareTranslations(this); // TODO remove this or do more elegantly
-
 		final WaitingDialog dialog = new WaitingDialog(this);
 		dialog.replaceTitle(getString(R.string.trial_load));
 		dialog.replaceMessage(getString(R.string.trial_load_text));
@@ -87,9 +128,9 @@ public class Trial extends Activity {
 
 			@Override
 			protected List<Translation> doInBackground(Void... params) {
-				Log.d("AVB-Trial", "Getting partition for " + language);
+				Log.d(AVBApp.TAG + "Trial", "Getting partition for " + language);
 				List<Translation> selection = BabelTower.getPartition(PARTITION, language);
-				Log.d("AVB-Trial", "Got partition of size " + selection.size());
+				Log.d(AVBApp.TAG + "Trial", "Got partition of size " + selection.size());
 				return selection;
 			}
 
@@ -97,21 +138,21 @@ public class Trial extends Activity {
 			protected void onPostExecute(List<Translation> partition) {
 				others = new HashMap<Translation, List<Translation>>();
 				selected = new LinkedList<Translation>();
-				// Log.d("AVB-Trial", "Antes " + partition.size());
+				// Log.d(AVBApp.TAG + "Trial", "Antes " + partition.size());
 				while (selected.size() < SIZE && partition.size() > 0) {
 					Translation t = partition.remove((int) (Math.random() * (partition.size() - 1)));
 					if (t != null) {
 						selected.add(t);
-						// Log.d("AVB-Trial", "Adding " + t);
+						// Log.d(AVBApp.TAG + "Trial", "Adding " + t);
 					}
 				}
-				// Log.d("AVB-Trial", "Depois " + partition.size());
+				// Log.d(AVBApp.TAG + "Trial", "Depois " + partition.size());
 
 				for (Translation t : selected) {
 					List<Translation> lt = new LinkedList<Translation>();
 					// TODO check for "right" alternatives in the "wrong" place.
 					// TODO get one antonym
-					// Log.d("AVB-Trial", "Fazendo " + partition.size() + " <> " + t);
+					// Log.d(AVBApp.TAG + "Trial", "Fazendo " + partition.size() + " <> " + t);
 					int i = ALTERNATIVES - 1;
 					List<Translation> bin = new LinkedList<Translation>();
 					while (i > 0 && partition.size() > 0) {
@@ -119,7 +160,7 @@ public class Trial extends Activity {
 							Translation rest = partition.remove(0);
 							do {
 								if (rest != null) {
-									// Log.d("AVB-Trial", "Putting rest " + rest);
+									// Log.d(AVBApp.TAG + "Trial", "Putting rest " + rest);
 									lt.add(rest);
 									--i;
 								}
@@ -132,7 +173,7 @@ public class Trial extends Activity {
 							if (possible != null) {
 								if (t.getKey().equals(possible.getKey())) {// FIXME NPE
 									bin.add(possible);
-									// Log.d("AVB-Trial", "Discarding same key " + possible + " <> " + t);
+									// Log.d(AVBApp.TAG + "Trial", "Discarding same key " + possible + " <> " + t);
 								}
 								else {
 									boolean exists = false;
@@ -143,7 +184,7 @@ public class Trial extends Activity {
 									}
 									if (exists) {
 										bin.add(possible);
-										// Log.d("AVB-Trial", "Discarding same term " + possible + " <> " + t);
+										// Log.d(AVBApp.TAG + "Trial", "Discarding same term " + possible + " <> " + t);
 									}
 									else {
 										lt.add(possible);
@@ -152,14 +193,14 @@ public class Trial extends Activity {
 								}
 							}
 							else {
-								// Log.d("AVB-Trial", "Essa porra é nula " + partition.size() + " <> " + t + " <> " + bla);
+								// Log.d(AVBApp.TAG + "Trial", "Essa porra é nula " + partition.size() + " <> " + t + " <> " + bla);
 							}
 						}
 					}
 					/* Recovering the discarded */
 					for (Translation discarded : bin) {
 						partition.add(discarded);
-						// Log.d("AVB-Trial", "Putting back " + discarded);
+						// Log.d(AVBApp.TAG + "Trial", "Putting back " + discarded);
 					}
 					bin = new LinkedList<Translation>();
 
@@ -167,7 +208,7 @@ public class Trial extends Activity {
 						others.put(t, lt);
 					}
 					else {
-						// Log.d("AVB-Trial", "Ignoring " + t + " <> " + lt.size());
+						// Log.d(AVBApp.TAG + "Trial", "Ignoring " + t + " <> " + lt.size());
 					}
 				}
 
@@ -179,6 +220,9 @@ public class Trial extends Activity {
 
 	}
 
+	/**
+	 * Computes the result of the current selection and moves to the next.
+	 */
 	private void moveToNext() {
 		if (selected.size() > 0) {
 			createNewStep(selected.remove(0));
@@ -259,6 +303,11 @@ public class Trial extends Activity {
 		}
 	}
 
+	/**
+	 * Builds up the visual interface to select an alternative.
+	 * 
+	 * @param answer specifies the translation to be tested.
+	 */
 	private void createNewStep(final Translation answer) {
 		List<Translation> alternatives = others.get(answer);
 		if (alternatives == null) {
@@ -305,21 +354,21 @@ public class Trial extends Activity {
 					correct = R.id.trial_option3;
 					break;
 				default:
-					Log.e("AVB-Trial", "No choice, this should never come.");
+					Log.e(AVBApp.TAG + "Trial", "No choice, this should never come.");
 					break;
 				}
 				RadioGroup rg = (RadioGroup) content.findViewById(R.id.trial_options);
 				if (rg.getCheckedRadioButtonId() == correct) {
 					answer.changeConfidence(1f);
 					BabelTower.saveTranslationConfidence(answer);
-					Log.d("AVB-Trial", "Correct Selection!");
+					Log.d(AVBApp.TAG + "Trial", "Correct Selection!");
 				}
 				else {
 					RadioButton rb = (RadioButton) content.findViewById(rg.getCheckedRadioButtonId());
 					incorrect.put(answer, rb.getText().toString());
 					answer.changeConfidence(-1f);
 					BabelTower.saveTranslationConfidence(answer);
-					Log.d("AVB-Trial", "Wrong, expected: " + answer.getTerm());
+					Log.d(AVBApp.TAG + "Trial", "Wrong, expected: " + answer.getTerm());
 				}
 				moveToNext();
 			}
@@ -358,6 +407,5 @@ public class Trial extends Activity {
 
 			timer.execute();
 		}
-
 	}
 }

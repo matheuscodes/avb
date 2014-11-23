@@ -1,3 +1,22 @@
+/**
+ * Copyright (C) 2014 Matheus Borges Teixeira
+ * 
+ * This is a part of Arkanos Vocabulary Builder (AVB)
+ * AVB is an Android application to improve vocabulary on foreign languages.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.arkanos.avb.data;
 
 import java.util.LinkedList;
@@ -17,28 +36,48 @@ import android.os.AsyncTask;
 import android.text.Html.ImageGetter;
 import android.util.Log;
 
+/**
+ * Singleton with application settings.
+ * 
+ * @version 1.0
+ * @author Matheus Borges Teixeira
+ */
 public class LanguageSettings {
-
+	/** Tag for debug outputs **/
 	public static final String TAG = AVBApp.TAG + "LanguageSettings";
-
+	/** Table name where settings are stored **/
 	private static final String TABLE = "settings";
 
+	/** Column name for the language **/
 	private static final String LANGUAGE = "language";
+	/** Column name for the installation status **/
 	private static final String INSTALLED = "active";
 
+	/** Writing link to the database **/
 	private static SQLiteDatabase db_write = null;
-	private static SQLiteDatabase db_read = null;
 
+	/** Language code for German **/
 	public static final String GERMAN = "de";
+	/** Language code for Swedish **/
 	public static final String SWEDISH = "sv";
+	/** Language code for Norwegian **/
 	public static final String NORWEGIAN = "no";
+	/** Language code for Portuguese **/
 	public static final String PORTUGUESE = "pt";
+	/** Language code for Polish **/
 	public static final String POLISH = "pl";
 
+	/** Special getter for flag images **/
 	private static ImageGetter flags = null;
 
-	public static void upgradeFrom(int version, SQLiteDatabase sql_db) {
-		// TODO version reduction
+	/**
+	 * Upgrades database structure from a particular previous version.
+	 * 
+	 * @param version specifies the current version of the database.
+	 * @param sql_db defines a connection to the database.
+	 */
+	public static synchronized void upgradeFrom(int version, SQLiteDatabase sql_db) {
+		// TODO Reduce the version count numbers.
 		ContentValues language = null;
 		if (version < 23) {
 			sql_db.execSQL("CREATE TABLE " + TABLE + "("
@@ -73,14 +112,23 @@ public class LanguageSettings {
 		}
 	}
 
+	/**
+	 * Open the connections to the database.
+	 * 
+	 * @param context defines the application context.
+	 */
 	public static synchronized void initialize(Context where) {
 		Log.i(TAG, "Initializing.");
 		DatabaseHelper dbh = new DatabaseHelper(where);
-		db_read = dbh.getReadableDatabase();
 		db_write = dbh.getWritableDatabase();
 	}
 
-	public static List<String> getAllLanguages() {
+	/**
+	 * Gets all languages in the database.
+	 * 
+	 * @return list with all languages.
+	 */
+	public static synchronized List<String> getAllLanguages() {
 		List<String> states = new LinkedList<String>();
 		String sql = "SELECT " + LANGUAGE + " FROM " + TABLE + ";";
 		try {
@@ -95,7 +143,12 @@ public class LanguageSettings {
 		return states;
 	}
 
-	public static List<String> getInstalledLanguages() {
+	/**
+	 * Gets only installed languages.
+	 * 
+	 * @return list with the installed languages.
+	 */
+	public static synchronized List<String> getInstalledLanguages() {
 		List<String> states = new LinkedList<String>();
 		String sql = "SELECT " + LANGUAGE + "," + INSTALLED + " FROM " + TABLE + " WHERE " + INSTALLED + " = 't';";
 		try {
@@ -110,7 +163,13 @@ public class LanguageSettings {
 		return states;
 	}
 
-	public static void installLanguage(String language, Context where) {
+	/**
+	 * Updates the installation status in language settings and installs it.
+	 * 
+	 * @param language specifies the language to be updated.
+	 * @param where specifies the application context.
+	 */
+	public static synchronized void installLanguage(String language, Context where) {
 		TranslationImporter caller;
 
 		caller = new TranslationImporter(language, where);
@@ -125,7 +184,13 @@ public class LanguageSettings {
 		}
 	}
 
-	public static void removeLanguage(final String language, Context where) {
+	/**
+	 * Updates the installation status in language settings and removes it.
+	 * 
+	 * @param language specifies the language to be updated.
+	 * @param where specifies the application context.
+	 */
+	public static synchronized void removeLanguage(final String language, Context where) {
 		final WaitingDialog wd = new WaitingDialog(where);
 		wd.replaceTitle(where.getString(R.string.unload_translation).replace("{language}", prettyName(language, where)));
 		wd.replaceMessage(where.getString(R.string.unload_translation_text));
@@ -153,7 +218,13 @@ public class LanguageSettings {
 		}.execute();
 	}
 
-	// TODO see if sync is needed
+	/**
+	 * Gets the reference to the flag image helper.
+	 * This can be used to resolve flag images.
+	 * 
+	 * @param c specifies the application context.
+	 * @return reference to the flag image helper.
+	 */
 	public static synchronized ImageGetter getFlags(final Context c) {
 		if (flags == null) {
 			flags = new ImageGetter() {
@@ -183,7 +254,14 @@ public class LanguageSettings {
 		return flags;
 	}
 
-	public static String prettyName(String l, Context c) {
+	/**
+	 * Converts a language code into its complete displayable name.
+	 * 
+	 * @param l specifies the language.
+	 * @param c specifies the application context.
+	 * @return a string with the language name.
+	 */
+	public static synchronized String prettyName(String l, Context c) {
 		if (l.equals(LanguageSettings.GERMAN))
 			return c.getString(R.string.languages_de_pretty);
 		if (l.equals(LanguageSettings.SWEDISH))
@@ -196,4 +274,53 @@ public class LanguageSettings {
 			return c.getString(R.string.languages_pl_pretty);
 		return "";
 	}
+
+	/*
+	 * TODO Clean this code.
+	 * private static final int NOUN_CLASS = 0;
+	 * private static final int NOUN_DESCRIPTION = 1;
+	 * 
+	 * private static HashMap<String, String[]> languages_configuration;
+	 * private static void loadConfigs(Context c) {
+	 * languages_configuration = new HashMap<String, String[]>();
+	 * String[] helper;
+	 * // Nouns
+	 * // DE
+	 * helper = new String[2];
+	 * helper[NOUN_CLASS] = "Femininum";
+	 * helper[NOUN_DESCRIPTION] = c.getString(R.string.de_femininum);
+	 * languages_configuration.put(LanguageSettings.GERMAN + "_f", helper);
+	 * 
+	 * helper = new String[2];
+	 * helper[NOUN_CLASS] = "Maskulinum";
+	 * helper[NOUN_DESCRIPTION] = c.getString(R.string.de_maskulinum);
+	 * languages_configuration.put(LanguageSettings.GERMAN + "_m", helper);
+	 * 
+	 * helper = new String[2];
+	 * helper[NOUN_CLASS] = "Neutrum";
+	 * helper[NOUN_DESCRIPTION] = c.getString(R.string.de_neutrum);
+	 * languages_configuration.put(LanguageSettings.GERMAN + "_n", helper);
+	 * 
+	 * helper = new String[2];
+	 * helper[NOUN_CLASS] = "Plural";
+	 * helper[NOUN_DESCRIPTION] = c.getString(R.string.de_plural);
+	 * languages_configuration.put(LanguageSettings.GERMAN + "_p", helper);
+	 * 
+	 * // SV
+	 * helper = new String[2];
+	 * helper[NOUN_CLASS] = "neutrum";
+	 * helper[NOUN_DESCRIPTION] = c.getString(R.string.sv_neutrum);
+	 * languages_configuration.put(LanguageSettings.SWEDISH + "_n", helper);
+	 * 
+	 * helper = new String[2];
+	 * helper[NOUN_CLASS] = "utrum";
+	 * helper[NOUN_DESCRIPTION] = c.getString(R.string.sv_utrum);
+	 * languages_configuration.put(LanguageSettings.SWEDISH + "_u", helper);
+	 * 
+	 * helper = new String[2];
+	 * helper[NOUN_CLASS] = "Neutrum";
+	 * helper[NOUN_DESCRIPTION] = c.getString(R.string.sv_plural);
+	 * languages_configuration.put(LanguageSettings.SWEDISH + "_p", helper);
+	 * }
+	 */
 }

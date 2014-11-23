@@ -1,11 +1,28 @@
+/**
+ * Copyright (C) 2014 Matheus Borges Teixeira
+ * 
+ * This is a part of Arkanos Vocabulary Builder (AVB)
+ * AVB is an Android application to improve vocabulary on foreign languages.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.arkanos.avb.data;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.arkanos.avb.AVBApp;
-import org.arkanos.avb.R;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -14,90 +31,73 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
+/**
+ * Singleton holding all language data operations.
+ * 
+ * @version 1.0
+ * @author Matheus Borges Teixeira
+ */
 public class BabelTower {
+	// TODO make all TAG uniform
+	/** Tag for debug outputs **/
 	public static final String TAG = AVBApp.TAG + "BabelTower";
 
-	// TODO everyone synchronized
+	/** Writing link to the database **/
 	private static SQLiteDatabase db_write = null;
+	/** Reading link to the database **/
 	private static SQLiteDatabase db_read = null;
 
-	private static final int NOUN_CLASS = 0;
-	private static final int NOUN_DESCRIPTION = 1;
-
-	private static HashMap<String, String[]> languages_configuration;
-
-	public static final String CONFIG_PATH = "config";
-
-	// TODO optimization: one table per language +faster drop +table size
-
-	private static void loadConfigs(Context c) {
-		languages_configuration = new HashMap<String, String[]>();
-		String[] helper;
-		/** Nouns **/
-		/* DE */
-		helper = new String[2];
-		helper[NOUN_CLASS] = "Femininum";
-		helper[NOUN_DESCRIPTION] = c.getString(R.string.de_femininum);
-		languages_configuration.put(LanguageSettings.GERMAN + "_f", helper);
-
-		helper = new String[2];
-		helper[NOUN_CLASS] = "Maskulinum";
-		helper[NOUN_DESCRIPTION] = c.getString(R.string.de_maskulinum);
-		languages_configuration.put(LanguageSettings.GERMAN + "_m", helper);
-
-		helper = new String[2];
-		helper[NOUN_CLASS] = "Neutrum";
-		helper[NOUN_DESCRIPTION] = c.getString(R.string.de_neutrum);
-		languages_configuration.put(LanguageSettings.GERMAN + "_n", helper);
-
-		helper = new String[2];
-		helper[NOUN_CLASS] = "Plural";
-		helper[NOUN_DESCRIPTION] = c.getString(R.string.de_plural);
-		languages_configuration.put(LanguageSettings.GERMAN + "_p", helper);
-
-		/* SV */
-		helper = new String[2];
-		helper[NOUN_CLASS] = "neutrum";
-		helper[NOUN_DESCRIPTION] = c.getString(R.string.sv_neutrum);
-		languages_configuration.put(LanguageSettings.SWEDISH + "_n", helper);
-
-		helper = new String[2];
-		helper[NOUN_CLASS] = "utrum";
-		helper[NOUN_DESCRIPTION] = c.getString(R.string.sv_utrum);
-		languages_configuration.put(LanguageSettings.SWEDISH + "_u", helper);
-
-		helper = new String[2];
-		helper[NOUN_CLASS] = "Neutrum";
-		helper[NOUN_DESCRIPTION] = c.getString(R.string.sv_plural);
-		languages_configuration.put(LanguageSettings.SWEDISH + "_p", helper);
-	}
-
+	/**
+	 * Open the connections to the database.
+	 * 
+	 * @param where defines the context for the database.
+	 */
 	public static synchronized void initialize(Context where) {
 		Log.i(TAG, "Initializing.");
-		loadConfigs(where);
 		DatabaseHelper dbh = new DatabaseHelper(where);
 		db_read = dbh.getReadableDatabase();
 		db_write = dbh.getWritableDatabase();
 	}
 
-	public static void upgradeFrom(int version, SQLiteDatabase sql_db) {
+	/**
+	 * Upgrades database structure from a particular previous version.
+	 * 
+	 * @param version specifies the current version of the database.
+	 * @param sql_db defines a connection to the database.
+	 */
+	public static synchronized void upgradeFrom(int version, SQLiteDatabase sql_db) {
 		if (version < 17) {
 			sql_db.execSQL(Translation.purgetSQLTable());
 			sql_db.execSQL(Translation.createSQLTable());
 		}
 	}
 
-	public static void prepare(String language) {
+	/**
+	 * Prepares the infrastructure for a new language.
+	 * 
+	 * @param language specifies the language to prepare.
+	 */
+	public static synchronized void prepare(String language) {
 		db_write.execSQL(Translation.createSQLTable(language));
 	}
 
-	public static void clean(String language) {
+	/**
+	 * Wipes out the data for a language.
+	 * 
+	 * @param language specifies which language to wipe.
+	 */
+	public static synchronized void clean(String language) {
 		// TODO either move to translation or get purge to here.
 		db_write.execSQL("DROP TABLE IF EXISTS " + Translation.TABLE + "_" + language + ";");
 		db_write.execSQL("DELETE FROM " + Translation.TABLE_TEXT + " WHERE " + Translation.LANGUAGE + " MATCH '" + language + "';");
 	}
 
-	public static void optimize(String language) {
+	/**
+	 * Creates or updates all necessary indexes to support queries.
+	 * 
+	 * @param language specifies the language to optimize.
+	 */
+	public static synchronized void optimize(String language) {
 		db_write.execSQL("INSERT INTO " + Translation.TABLE_TEXT + "(" + Translation.TABLE_TEXT + ") VALUES('optimize');");
 		db_write.execSQL("CREATE INDEX IF NOT EXISTS translation_index_confidence_trust_" + language + " ON "
 				+ Translation.TABLE + "_" + language + " ("
@@ -105,7 +105,13 @@ public class BabelTower {
 				+ Translation.TRUST + ");");
 	}
 
-	public static void addTranslation(ContentValues data, String language) {
+	/**
+	 * Inserts a single translation into the database.
+	 * 
+	 * @param data defines the contents of the row.
+	 * @param language specifies the language where the translation goes.
+	 */
+	public static synchronized void addTranslation(ContentValues data, String language) {
 		try {
 			db_write.insert(Translation.TABLE + "_" + language, null, data);
 		} catch (SQLiteException e) {
@@ -113,7 +119,14 @@ public class BabelTower {
 		}
 	}
 
-	public static void addTranslation(String key, String synonyms, String language) {
+	/**
+	 * Inserts search able translations into the database.
+	 * 
+	 * @param key specifies the sense which the translations belong to.
+	 * @param synonyms defines all translations for that sense.
+	 * @param language specifies the language the translations belong to.
+	 */
+	public static synchronized void addTranslation(String key, String synonyms, String language) {
 		ContentValues data = new ContentValues();
 		data.put(Translation.SYNONYMS, synonyms);
 		data.put(Translation.SENSE_KEY, key);
@@ -125,7 +138,13 @@ public class BabelTower {
 		}
 	}
 
-	public static List<Sense> searchTranslations(String query) {
+	/**
+	 * Searches for senses which translations match to the query string.
+	 * 
+	 * @param query specifies the search query.
+	 * @return a list with all senses which translations match to the query.
+	 */
+	public static synchronized List<Sense> searchTranslations(String query) {
 		List<Sense> results = new LinkedList<Sense>();
 		try {
 			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE_TEXT
@@ -152,7 +171,18 @@ public class BabelTower {
 		return results;
 	}
 
-	public static List<Translation> getPartition(int size, String language) {
+	/**
+	 * Selects a partition from a language based on size.
+	 * The partition is based on the confidence from the user.
+	 * Results will include items from top, middle and bottom.
+	 * The partition will try to get equal amounts on each.
+	 * Results might contain less items than specified.
+	 * 
+	 * @param size specifies the total amount of desired items.
+	 * @param language defines the language to fetch from.
+	 * @return a list with fetched translations.
+	 */
+	public static synchronized List<Translation> getPartition(int size, String language) {
 		float c_max = 0, c_avg = 0, c_min = 0;
 		List<Translation> list = new LinkedList<Translation>();
 		List<Translation> average = new LinkedList<Translation>();
@@ -213,7 +243,16 @@ public class BabelTower {
 		return list;
 	}
 
-	private static List<Translation> selectPartition(int count, String language, float c_min, float c_max) {
+	/**
+	 * Loads a continuous block of translations from the database.
+	 * 
+	 * @param count specifies the length of the list.
+	 * @param language defines the language where to get data from.
+	 * @param c_min specifies the bottom limit for the confidence.
+	 * @param c_max specifies the top limit for the confidence.
+	 * @return a list which satisfies the selection criteria.
+	 */
+	private static synchronized List<Translation> selectPartition(int count, String language, float c_min, float c_max) {
 		List<Translation> result = new LinkedList<Translation>();
 		try {
 			String sql = "SELECT * FROM " + Translation.TABLE + "_" + language
@@ -240,7 +279,14 @@ public class BabelTower {
 		return null;
 	}
 
-	public static List<Translation> getTranslations(String key, String language) {
+	/**
+	 * Fetches all translations for a given sense.
+	 * 
+	 * @param key defines the sense key.
+	 * @param language specifies the language for the translations.
+	 * @return a list with all individual translations.
+	 */
+	public static synchronized List<Translation> getTranslations(String key, String language) {
 		List<Translation> results = new LinkedList<Translation>();
 
 		try {
@@ -259,7 +305,12 @@ public class BabelTower {
 		return results;
 	}
 
-	public static void deleteTranslation(Translation t) {
+	/**
+	 * Removes a translation from the database.
+	 * 
+	 * @param t specifies the translation to be removed.
+	 */
+	public static synchronized void deleteTranslation(Translation t) {
 		String sql_table = "DELETE FROM " + Translation.TABLE + "_" + t.getLanguage()
 				+ " WHERE " + Translation.SENSE_KEY + " = '" + t.getKey() + "'"
 				+ " AND " + Translation.TERM + " = '" + t.getTerm() + "';";
@@ -296,7 +347,14 @@ public class BabelTower {
 		}
 	}
 
-	public static String getTranslationSynonyms(String key, String language) {
+	/**
+	 * Fetches the translations for a given sense.
+	 * 
+	 * @param key specifies the sense key.
+	 * @param language defines the language for the translations.
+	 * @return the translations as a single string.
+	 */
+	public static synchronized String getTranslationSynonyms(String key, String language) {
 		String result = null;
 		try {
 			Cursor c = db_read.rawQuery("SELECT * FROM " + Translation.TABLE_TEXT
@@ -318,7 +376,12 @@ public class BabelTower {
 		return result;
 	}
 
-	public static void addTranslation(Translation t) {
+	/**
+	 * Inserts a translation into the database.
+	 * 
+	 * @param t defines the translation to be added.
+	 */
+	public static synchronized void addTranslation(Translation t) {
 		ContentValues map = new ContentValues();
 		map.put(Translation.SENSE_KEY, t.getKey());
 		map.put(Translation.TERM, t.getTerm());
@@ -351,7 +414,12 @@ public class BabelTower {
 
 	}
 
-	public static void saveTranslationTrust(Translation t) {
+	/**
+	 * Updates the trust of a given translation in the database.
+	 * 
+	 * @param t specifies the translation and trust to be saved.
+	 */
+	public static synchronized void saveTranslationTrust(Translation t) {
 		String sql = "UPDATE " + Translation.TABLE + "_" + t.getLanguage()
 				+ " SET " + Translation.TRUST + " = " + t.getTrust()
 				+ " WHERE " + Translation.SENSE_KEY + " = '" + t.getKey() + "'"
@@ -364,7 +432,12 @@ public class BabelTower {
 		}
 	}
 
-	public static void saveTranslationConfidence(Translation t) {
+	/**
+	 * Updates the confidence of a given translation in the database.
+	 * 
+	 * @param t specifies the translation and confidence to be saved.
+	 */
+	public static synchronized void saveTranslationConfidence(Translation t) {
 		String sql = "UPDATE " + Translation.TABLE + "_" + t.getLanguage()
 				+ " SET " + Translation.CONFIDENCE + " = " + t.getConfidence()
 				+ " WHERE " + Translation.SENSE_KEY + " = '" + t.getKey() + "'"
@@ -377,7 +450,15 @@ public class BabelTower {
 		}
 	}
 
-	public static int fillTranslationTrustLists(String language, List<Integer> amounts, List<Float> trusts) {
+	/**
+	 * Compiles a histogram of trust values.
+	 * 
+	 * @param language defines the language to be used.
+	 * @param amounts stores count for each unique trust.
+	 * @param trusts stores the unique trusts.
+	 * @return total of items in the histogram.
+	 */
+	public static synchronized int fillTranslationTrustLists(String language, List<Integer> amounts, List<Float> trusts) {
 		String sql = "SELECT COUNT(trusts) AS how_many,trusts "
 				+ "FROM (SELECT " + Translation.SENSE_KEY + ",AVG(" + Translation.TRUST + ") AS trusts "
 				+ "FROM " + Translation.TABLE + "_" + language + " "
@@ -396,7 +477,15 @@ public class BabelTower {
 		return total;
 	}
 
-	public static void fillTranslationKnownLists(String language, List<Integer> amounts, List<Float> trusts) {
+	/**
+	 * Compiles a histogram of positive confidence values.
+	 * 
+	 * @param language defines the language to be used.
+	 * @param amounts stores count for each unique positive confidence.
+	 * @param trusts stores the unique positive confidences.
+	 * @return total of items in the histogram.
+	 */
+	public static synchronized void fillTranslationKnownLists(String language, List<Integer> amounts, List<Float> trusts) {
 		String sql = "SELECT COUNT(confidences) AS how_many,confidences "
 				+ "FROM (SELECT " + Translation.SENSE_KEY + ",AVG(" + Translation.CONFIDENCE + ") AS confidences "
 				+ "FROM " + Translation.TABLE + "_" + language + " "
@@ -413,7 +502,15 @@ public class BabelTower {
 		c.close();
 	}
 
-	public static void fillTranslationUnknownLists(String language, List<Integer> amounts, List<Float> trusts) {
+	/**
+	 * Compiles a histogram of negative confidence values.
+	 * 
+	 * @param language defines the language to be used.
+	 * @param amounts stores count for each unique negative confidence.
+	 * @param trusts stores the unique negative confidences.
+	 * @return total of items in the histogram.
+	 */
+	public static synchronized void fillTranslationUnknownLists(String language, List<Integer> amounts, List<Float> trusts) {
 		String sql = "SELECT COUNT(confidences) AS how_many,confidences "
 				+ "FROM (SELECT " + Translation.SENSE_KEY + ",AVG(" + Translation.CONFIDENCE + ") AS confidences "
 				+ "FROM " + Translation.TABLE + "_" + language + " "
@@ -430,15 +527,21 @@ public class BabelTower {
 		c.close();
 	}
 
-	public static String getSenseToTranslate(String language) {
-		String sql = "SELECT MAX(" + Sense.Fields.PRIORITY + ")," + Sense.Fields.SENSE + " "
+	/**
+	 * Fetches a single sense for which there is no translation yet.
+	 * 
+	 * @param language specifies the language to be considered.
+	 * @return the sense key.
+	 */
+	public static synchronized String getSenseToTranslate(String language) {
+		String sql = "SELECT MAX(" + Sense.PRIORITY + ")," + Sense.SENSE + " "
 				+ "FROM " + Sense.TABLE + " LEFT JOIN " + Translation.TABLE + "_" + language + " "
-				+ "ON " + Sense.Fields.SENSE + " = " + Translation.SENSE_KEY + " "
+				+ "ON " + Sense.SENSE + " = " + Translation.SENSE_KEY + " "
 				+ "WHERE " + Translation.SENSE_KEY + " IS NULL;";
 		String result = null;
 		Cursor c = db_read.rawQuery(sql, null);
 		if (c.moveToFirst()) {
-			result = c.getString(c.getColumnIndex(Sense.Fields.SENSE.toString()));
+			result = c.getString(c.getColumnIndex(Sense.SENSE.toString()));
 		}
 		c.close();
 		return result;

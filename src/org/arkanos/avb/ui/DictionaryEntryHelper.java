@@ -64,8 +64,8 @@ public class DictionaryEntryHelper {
 			}
 			rest = rest.trim();
 			map.put("dict_word", format("<img src=\"en\"/>  " + word, query, where));
-			map.put("dict_class", format("<i>" + s.getString(Sense.Fields.GRAMMAR_CLASS) + "</i>", query, where));
-			map.put("dict_glossary", format(s.getString(Sense.Fields.GLOSSARY), query, where));
+			map.put("dict_class", format("<i>" + s.getGrammarClass() + "</i>", query, where));
+			map.put("dict_glossary", format(s.getGlossary(), query, where));
 			String extras = "";
 			if (rest.length() > 0) {
 				extras = "<i>" + where.getString(R.string.dict_synonyms) + ":</i> " + rest;

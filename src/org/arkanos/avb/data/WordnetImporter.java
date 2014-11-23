@@ -1,3 +1,22 @@
+/**
+ * Copyright (C) 2014 Matheus Borges Teixeira
+ * 
+ * This is a part of Arkanos Vocabulary Builder (AVB)
+ * AVB is an Android application to improve vocabulary on foreign languages.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.arkanos.avb.data;
 
 import java.io.BufferedReader;
@@ -5,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.arkanos.avb.AVBApp;
 import org.arkanos.avb.R;
 import org.arkanos.avb.interfaces.ProgressObserver;
 import org.arkanos.avb.ui.LoadingDialog;
@@ -16,21 +36,45 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
 
+/**
+ * Process responsible for importing Wordnet data.
+ * 
+ * WordNet® 3.0 is intelectual property of Princeton University.
+ * http://wordnet.princeton.edu/wordnet/license/
+ * 
+ * @version 1.0
+ * @author Matheus Borges Teixeira
+ */
 public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
+	/** Tag for debug outputs **/
+	public static final String TAG = AVBApp.TAG + "WordnetImporter";
 
+	/** Version of the Wordnet being loaded **/
 	public static final String WN_VERSION = "3.0";
+	/** Total amount of senses to be read **/
 	public static final int WN_TOTAL = 117659;
+	/** Total amount of nouns **/
 	public static final int WN_NOUNS = 82115;
+	/** Total amount of verbs **/
 	public static final int WN_VERBS = 13767;
+	/** Total amount of adjectives **/
 	public static final int WN_ADJECTIVES = 18156;
+	/** Total amount of adverbs **/
 	public static final int WN_ADVERBS = 3621;
 
+	/** Amount of items to be processed before updating progress **/
 	private static final int BATCH = 100;
+	/** Fixed amount of bytes to skip from the Wordnet files **/
 	private static final long SKIP = 1740;
 
+	/** Reference to the progress bar dialog **/
 	private static ProgressObserver progress_observer = null;
+	/** UI context where the progress dialog is contained **/
 	private static Context parent = null;
 
+	/**
+	 * @see AsyncTask#onProgressUpdate(Integer...)
+	 */
 	@Override
 	protected void onProgressUpdate(Integer... i) {
 		progress_observer.replaceMessage(parent.getString(i[0]).replace("{count}", "\n" + i[1]));
@@ -39,6 +83,9 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 		}
 	}
 
+	/**
+	 * @see AsyncTask#doInBackground(Void...)
+	 */
 	@Override
 	protected Void doInBackground(Void... v) {
 		synchronized (this) { // TODO remove this
@@ -56,12 +103,22 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 		}
 	}
 
+	/**
+	 * @see AsyncTask#onPostExecute(Void)
+	 */
 	@Override
 	protected void onPostExecute(Void v) {
 		progress_observer.finishIt();
-		Log.d("AVB-Wordnet", "Dictionary has now " + Dictionary.getSize() + " words.");
+		Log.d(TAG, "Dictionary has now " + Dictionary.getSize() + " words.");
 	}
 
+	/**
+	 * Processes a Wordnet file.
+	 * 
+	 * @param size specifies the amount of words in the file.
+	 * @param file specifies the file to be opened.
+	 * @param message defines the message on the progress update.
+	 */
 	private void loadFile(int size, int file, int message) {
 		try {
 			int total = size;
@@ -92,6 +149,11 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 		}
 	}
 
+	/**
+	 * Constructs the process and dialog to track the progress.
+	 * 
+	 * @param who specifies the application context.
+	 */
 	public WordnetImporter(Context who) {
 		progress_observer = new LoadingDialog(who);
 		progress_observer.replaceTitle(who.getString(R.string.load_dict));
@@ -106,25 +168,32 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 				public void onClick(DialogInterface dialog, int id) {
 					progress_observer.finishIt();
 					// parent.finish();//TODO oops, something will go wrong find a way.
-					Log.d("AVB-Wordnet", "Loading cancelled.");
+					Log.d(TAG, "Loading cancelled.");
 				}
 			});
 			ad.setPositiveButton(parent.getString(R.string.yes), new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					progress_observer.startIt();
 					execute();
-					Log.d("AVB-Wordnet", "Loading started.");
+					Log.d(TAG, "Loading started.");
 				}
 			});
 			ad.show();
 		}
 		else {
-			Log.d("AVB-Wordnet", "Dictionary is already full.");
+			Log.d(TAG, "Dictionary is already full.");
 		}
 	}
 
+	/**
+	 * Parses one single sense from the Wordnet file line.
+	 * 
+	 * @param from defines the content to be parsed.
+	 * @param to_data recipient of content to be put on individual table.
+	 * @param to_text recipient of content to be put on search table.
+	 */
 	private static void readSense(String from, ContentValues to_data, ContentValues to_text) {
-		// Log.d("AVB-Wordnet", from);
+		// Log.d(TAG, from);
 		String processed = from;
 		int priority = 0;
 		// String debug = "";
@@ -163,17 +232,24 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 		// debug += "<" + synonyms + ">";
 		// TODO test fix
 		// TODO review priority (too high)
-		to_text.put(Sense.Fields.SENSE.toString(), ss_type + synset_offset);
+		to_text.put(Sense.SENSE, ss_type + synset_offset);
 
-		to_text.put(Sense.Fields.GLOSSARY.toString(), glossary.trim());
-		to_text.put(Sense.Fields.SYNONYMS.toString(), synonyms);
+		to_text.put(Sense.GLOSSARY, glossary.trim());
+		to_text.put(Sense.SYNONYMS, synonyms);
 
-		to_data.put(Sense.Fields.SENSE.toString(), ss_type + synset_offset);
+		to_data.put(Sense.SENSE, ss_type + synset_offset);
 		priority += readAntonyms(processed, to_data);
-		to_data.put(Sense.Fields.PRIORITY.toString(), priority);
-		// Log.d("AVB-Wordnet", debug + " " + glossary);
+		to_data.put(Sense.PRIORITY, priority);
+		// Log.d(TAG, debug + " " + glossary);
 	}
 
+	/**
+	 * Parses the antonym part of the sense string.
+	 * 
+	 * @param from defines the content to be parsed.
+	 * @param to recipient for the antonyms.
+	 * @return the amount of antonyms read.
+	 */
 	private static int readAntonyms(String from, ContentValues to) {
 		String processed = from;
 		int priority = 0;
@@ -203,7 +279,7 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 				}
 			}
 		}
-		to.put(Sense.Fields.ANTONYMS.toString(), antonyms);
+		to.put(Sense.ANTONYMS, antonyms);
 		return priority;
 	}
 }

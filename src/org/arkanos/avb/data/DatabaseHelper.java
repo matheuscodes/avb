@@ -46,7 +46,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 * @param context specifies the context of the application.
 	 */
 	public DatabaseHelper(Context context) {
-		// TODO check for the SD card first, if fails, close.
+		// FIXME Error#01 When there is no SD card available.
 		super(context, context.getExternalFilesDir(null).getAbsolutePath() + "/" + DATABASE_NAME, null, DATABASE_VERSION);
 	}
 

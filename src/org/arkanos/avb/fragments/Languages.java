@@ -57,7 +57,7 @@ public class Languages extends Fragment {
 
 		final View rootView = inflater.inflate(R.layout.languages_selection, container, false);
 
-		// TODO use a generic building system based on LanguageSettings.getAllLanguages()
+		// TODO Feature#12 Use a generic building system based on LanguageSettings.getAllLanguages()
 		/** SV **/
 		configureCheckbox(rootView, R.id.use_sv, states, LanguageSettings.SWEDISH);
 
@@ -112,7 +112,7 @@ public class Languages extends Fragment {
 		}
 		else {
 			LanguageSettings.removeLanguage(language, cb.getContext());
-			// TODO confirm dialog
+			// TODO Feature#03 Add a confirm dialog before removing.
 		}
 	}
 }

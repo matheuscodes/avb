@@ -88,19 +88,17 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 	 */
 	@Override
 	protected Void doInBackground(Void... v) {
-		synchronized (this) { // TODO remove this
-			progress_observer.defineEnd(WN_TOTAL);
-			progress_observer.defineStep(0);
-			// TODO add a resume feature
-			Dictionary.clean(); // TODO remove this
-			loadFile(WN_ADVERBS, R.raw.data_adv, R.string.load_dict_adv);
-			loadFile(WN_VERBS, R.raw.data_verb, R.string.load_dict_verb);
-			loadFile(WN_ADJECTIVES, R.raw.data_adj, R.string.load_dict_adj);
-			loadFile(WN_NOUNS, R.raw.data_noun, R.string.load_dict_noun);
-			progress_observer.replaceMessage(parent.getString(R.string.load_dict_optimize));
-			Dictionary.optimize();
-			return null;
-		}
+		progress_observer.defineEnd(WN_TOTAL);
+		progress_observer.defineStep(0);
+		// TODO Feature#01 Add a resume function.
+		Dictionary.clean();
+		loadFile(WN_ADVERBS, R.raw.data_adv, R.string.load_dict_adv);
+		loadFile(WN_VERBS, R.raw.data_verb, R.string.load_dict_verb);
+		loadFile(WN_ADJECTIVES, R.raw.data_adj, R.string.load_dict_adj);
+		loadFile(WN_NOUNS, R.raw.data_noun, R.string.load_dict_noun);
+		progress_observer.replaceMessage(parent.getString(R.string.load_dict_optimize));
+		Dictionary.optimize();
+		return null;
 	}
 
 	/**
@@ -142,7 +140,7 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 				total -= BATCH;
 				publishProgress(message, total, BATCH);
 			}
-			reader.close(); // TODO check if ok.
+			reader.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -167,7 +165,7 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 			ad.setNegativeButton(parent.getString(R.string.no), new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					progress_observer.finishIt();
-					// parent.finish();//TODO oops, something will go wrong find a way.
+					// parent.finish();//TODO Feature#08 Handle the case user declines data loading.
 					Log.d(TAG, "Loading cancelled.");
 				}
 			});
@@ -230,8 +228,7 @@ public class WordnetImporter extends AsyncTask<Void, Integer, Void> {
 																			// lex_id
 		}
 		// debug += "<" + synonyms + ">";
-		// TODO test fix
-		// TODO review priority (too high)
+
 		to_text.put(Sense.SENSE, ss_type + synset_offset);
 
 		to_text.put(Sense.GLOSSARY, glossary.trim());

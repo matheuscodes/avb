@@ -174,10 +174,9 @@ public class Translation {
 	 * 
 	 * @return the translation synonyms.
 	 */
-	public String getSynonyms() {
-		// TODO maybe rename to "getPretty" because of the set (which expects data-data)
+	public String getPrettySynonyms() {
 		if (synonyms != null) {
-			return synonyms.replace(" ", ", ").replace('_', ' '); // TODO move back all this crap causing regression.
+			return synonyms.replace(" ", ", ").replace('_', ' ');
 		}
 		return null;
 	}
@@ -197,7 +196,7 @@ public class Translation {
 	 * @param query defines what information is relevant.
 	 */
 	public void cleanSynonyms(String query) {
-		// TODO check for each term of the query as well make_out, make, out...
+		// TODO Feature#02 Break query in terms (make_out, make, out).
 		String newsynonyms = "";
 		String query_right = query.replace(' ', '_').toLowerCase(Locale.getDefault());
 		for (String s : breakToTerms(synonyms)) {

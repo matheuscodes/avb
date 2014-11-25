@@ -123,7 +123,7 @@ public class Trial extends Activity {
 		dialog.replaceTitle(getString(R.string.trial_load));
 		dialog.replaceMessage(getString(R.string.trial_load_text));
 		dialog.startIt();
-		// TODO nothing when there aren't enough items for 1 game and alternatives
+		// FIXME Error#02 Do nothing when there aren't enough items for 1 game and its alternatives.
 		new AsyncTask<Void, Void, List<Translation>>() {
 
 			@Override
@@ -150,8 +150,8 @@ public class Trial extends Activity {
 
 				for (Translation t : selected) {
 					List<Translation> lt = new LinkedList<Translation>();
-					// TODO check for "right" alternatives in the "wrong" place.
-					// TODO get one antonym
+					// TODO Feature#13 Check for "right" alternatives in the "wrong" place.
+					// TODO Feature#05 Add at least one Antonym.
 					// Log.d(AVBApp.TAG + "Trial", "Fazendo " + partition.size() + " <> " + t);
 					int i = ALTERNATIVES - 1;
 					List<Translation> bin = new LinkedList<Translation>();
@@ -171,7 +171,7 @@ public class Trial extends Activity {
 							int bla = (int) (Math.random() * (partition.size() - 1));
 							Translation possible = partition.remove(bla);
 							if (possible != null) {
-								if (t.getKey().equals(possible.getKey())) {// FIXME NPE
+								if (t.getKey().equals(possible.getKey())) {// FIXME Error#03 NPE when partition has not enough items.
 									bin.add(possible);
 									// Log.d(AVBApp.TAG + "Trial", "Discarding same key " + possible + " <> " + t);
 								}
@@ -250,7 +250,7 @@ public class Trial extends Activity {
 					TableRow tr = new TableRow(this);
 					TextView tv = new TextView(this);
 
-					String sentence = "<b>" + s.getHead().replace('_', ' ') + ":</b><br/>";
+					String sentence = "<b>" + s.getPrettyHead().replace('_', ' ') + ":</b><br/>";
 					if (given.equals(getString(R.string.trial_dont_know))) {
 						sentence += getString(R.string.trial_report_skipped);
 						tr.setBackgroundColor(getResources().getColor(R.color.trial_skipped));

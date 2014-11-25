@@ -54,7 +54,7 @@ public class Main extends Activity implements ActionBar.TabListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		// FIXME Done in the launch activity because of the dialogs first time.
+		// FIXME Groom#02 Done in the launch activity because of the dialogs first time. (see Feature#04)
 		if (AVBApp.failedInitialize()) {
 			LanguageSettings.initialize(this);
 			Dictionary.initialize(this);

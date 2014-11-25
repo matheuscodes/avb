@@ -38,7 +38,6 @@ import android.util.Log;
  * @author Matheus Borges Teixeira
  */
 public class BabelTower {
-	// TODO make all TAG uniform
 	/** Tag for debug outputs **/
 	public static final String TAG = AVBApp.TAG + "BabelTower";
 
@@ -87,7 +86,6 @@ public class BabelTower {
 	 * @param language specifies which language to wipe.
 	 */
 	public static synchronized void clean(String language) {
-		// TODO either move to translation or get purge to here.
 		db_write.execSQL("DROP TABLE IF EXISTS " + Translation.TABLE + "_" + language + ";");
 		db_write.execSQL("DELETE FROM " + Translation.TABLE_TEXT + " WHERE " + Translation.LANGUAGE + " MATCH '" + language + "';");
 	}
@@ -260,11 +258,11 @@ public class BabelTower {
 					+ " AND " + Translation.CONFIDENCE + " >= " + c_min
 					+ " LIMIT " + count + ";";
 			// Log.d(TAG, "SQL: " + sql);
-			// Log.d("AVB-BabelTower", "Trying to fetch " + count + ".");
+			// Log.d(TAG, "Trying to fetch " + count + ".");
 			Cursor c = db_read.rawQuery(sql, null);
 
 			if (c.moveToFirst()) {
-				// Log.d("AVB-BabelTower", "Fetching done.");
+				// Log.d(TAG, "Fetching done.");
 				do {
 					// result[read] = BabelTower.getTranslation(c.getString(c.getColumnIndex(Translation.Fields.SENSE_KEY.toString())), language);
 					// result[read++].setTerm(c.getString(c.getColumnIndex(Translation.Fields.TERM.toString())));
@@ -315,19 +313,18 @@ public class BabelTower {
 				+ " WHERE " + Translation.SENSE_KEY + " = '" + t.getKey() + "'"
 				+ " AND " + Translation.TERM + " = '" + t.getTerm() + "';";
 		String clean;
-		// TODO maybe move this code to Translation
-		if (t.getSynonyms() == null) {
+		if (t.getPrettySynonyms() == null) {
 			clean = getTranslationSynonyms(t.getKey(), t.getLanguage()).trim();
 		}
 		else {
-			clean = t.getSynonyms();
+			clean = t.getPrettySynonyms();
 		}
 		clean = clean.replace(t.getTerm(), "").replace("  ", " ");
 		t.setSynonyms(clean);
 		String sql_text;
-		if (t.getSynonyms().length() > 0) {
+		if (t.getPrettySynonyms().length() > 0) {
 			sql_text = "UPDATE " + Translation.TABLE_TEXT
-					+ " SET " + Translation.SYNONYMS + " = '" + t.getSynonyms() + "'"
+					+ " SET " + Translation.SYNONYMS + " = '" + t.getPrettySynonyms() + "'"
 					+ " WHERE " + Translation.TABLE_TEXT + " MATCH '"
 					+ Translation.SENSE_KEY + ":" + t.getKey() + " "
 					+ Translation.LANGUAGE + ":" + t.getLanguage() + "';";
@@ -392,7 +389,6 @@ public class BabelTower {
 		addTranslation(map, t.getLanguage());
 
 		String synonyms = getTranslationSynonyms(t.getKey(), t.getLanguage());
-		// TODO maybe move this logic to Translation
 		if (synonyms != null) {
 			synonyms += " " + t.getTerm();
 			synonyms.replace("  ", " ");

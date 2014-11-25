@@ -57,7 +57,7 @@ public class DictionaryEntryHelper {
 	 * @return a SimpleAdapter with all given senses.
 	 */
 	public static SimpleAdapter buildListAdapter(List<Sense> ls, String query, Context where) {
-		// TODO optimize me please... use 75% of the entire time.
+		// TODO Feature#00 Optimize this code as it consumes 75% of the entire time.
 
 		// create the grid item mapping
 		List<HashMap<String, Spanned>> fillMaps = buildMaps(ls, query, where);
@@ -105,7 +105,7 @@ public class DictionaryEntryHelper {
 		List<HashMap<String, Spanned>> fillMaps = new LinkedList<HashMap<String, Spanned>>();
 		for (Sense s : ls) {
 			HashMap<String, Spanned> map = new HashMap<String, Spanned>(4);
-			String word = s.getHead();
+			String word = s.getPrettyHead();
 			String rest = s.getSynonyms().replace(word, "");
 			if (rest.indexOf(',') == 0) {
 				rest = rest.substring(1);
@@ -119,7 +119,7 @@ public class DictionaryEntryHelper {
 				extras = "<i>" + where.getString(R.string.dict_synonyms) + ":</i> " + rest;
 			}
 			for (Map.Entry<String, Translation> t : s.getTranslations().entrySet()) {
-				extras += "<br/><br/><img src=\"" + t.getKey() + "\"/>  " + t.getValue().getSynonyms();
+				extras += "<br/><br/><img src=\"" + t.getKey() + "\"/>  " + t.getValue().getPrettySynonyms();
 			}
 			map.put("dict_extras", format(extras, query, where));
 			fillMaps.add(map);

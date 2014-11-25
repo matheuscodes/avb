@@ -83,7 +83,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 		dialog.replaceTitle(title);
 		dialog.replaceMessage(parent.getString(R.string.load_translation_clean));
 		dialog.startIt();
-		// FIXME the dialog does not appear while cleaning.
+		// FIXME Error#04 The dialog does not appear while cleaning.
 		BabelTower.clean(language);
 		dialog.replaceMessage(message);
 	}
@@ -97,7 +97,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 		if (i.length > 1) {
 			dialog.increaseBy(i[1].intValue());
 		}
-		// TODO Set message when optimizing.
+		// TODO Feature#10 Set different message while optimizing.
 	}
 
 	/**
@@ -107,7 +107,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 	protected Void doInBackground(Void... arg0) {
 		// Only one importer shall run at a time.
 		Log.d(TAG, "Started importing " + language);
-		// TODO this desperately needs optimization, maybe turn off-on indexes.
+		// TODO Feature#00 This desperately needs optimization.
 		synchronized (dialog) {
 			message = parent.getString(R.string.load_translation_text);
 			try {
@@ -143,7 +143,7 @@ public class TranslationImporter extends AsyncTask<Void, Integer, Void> {
 					}
 					publishProgress(Integer.valueOf(total), BATCH);
 				}
-				BabelTower.optimize(language); // TODO tell the user
+				BabelTower.optimize(language); // TODO Feature#11 Inform the user about optimization.
 				reader.close();
 			} catch (IOException e) {
 				Log.e(TAG, e.toString());

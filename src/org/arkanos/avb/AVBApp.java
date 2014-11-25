@@ -42,7 +42,7 @@ public class AVBApp extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		// TODO find a way out to execute this with dialogs w/o first activity.
+		// TODO Feature#04 Find a way out to execute this with dialogs w/o first activity to hold it.
 		try {
 			LanguageSettings.initialize(this);
 			Dictionary.initialize(this);

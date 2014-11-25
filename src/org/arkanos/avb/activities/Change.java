@@ -97,7 +97,7 @@ public class Change extends Activity {
 		title = title.replace("{language}", LanguageSettings.prettyName(language, this));
 
 		if (sense != null) {
-			title = title.replace("{word}", sense.getHead());
+			title = title.replace("{word}", sense.getPrettyHead());
 			this.setTitle(title);
 
 			List<Translation> lt = BabelTower.getTranslations(sense.getKey(), language);
@@ -137,11 +137,11 @@ public class Change extends Activity {
 						tr.removeView(confirm_button);
 						tr.removeView(remove_button);
 						tv.setTextColor(getResources().getColor(R.color.change_confirmed));
-						item.increaseTrust(1f); // TODO reference in a constant somewhere
+						item.increaseTrust(1f); // TODO Feature#09 Reference this in a constant somewhere.
 						BabelTower.saveTranslationTrust(item);
 					}
 				});
-				if (item.getTrust() < 1f) {// TODO reference in a constant somewhere
+				if (item.getTrust() < 1f) { // TODO Feature#09 Reference this in a constant somewhere.
 					tr.addView(confirm_button);
 				}
 				else {

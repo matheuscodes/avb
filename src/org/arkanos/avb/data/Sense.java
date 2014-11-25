@@ -37,7 +37,7 @@ public class Sense implements Comparable<Sense> {
 	/** Tag for debug outputs **/
 	public static final String TAG = AVBApp.TAG + "Sense";
 
-	// TODO maybe remove unnecessary complexity
+	// TODO Feature#06 Remove unnecessary complexity and unused code.
 	public enum GrammarClass {
 		ADVERB, VERB, ADJECTIVE, NOUN;
 
@@ -46,7 +46,6 @@ public class Sense implements Comparable<Sense> {
 				return ADVERB;
 			if (key.charAt(0) == 'n')
 				return NOUN;
-			// TODO break
 			if (key.charAt(0) == 'a' || key.charAt(0) == 's')
 				return ADJECTIVE;
 			if (key.charAt(0) == 'v')
@@ -57,7 +56,7 @@ public class Sense implements Comparable<Sense> {
 
 		@Override
 		public String toString() {
-			// TODO move names to @string
+			// TODO Feature#07 Move names to strings.xml
 			return this.name().toLowerCase(Locale.getDefault());
 		}
 	};
@@ -229,7 +228,7 @@ public class Sense implements Comparable<Sense> {
 		}
 
 		for (Map.Entry<String, Translation> t : translations.entrySet()) {
-			String translation = t.getValue().getSynonyms();
+			String translation = t.getValue().getPrettySynonyms();
 			if (translation.contains(sort_power)) {
 				if (translation.contains(sort_power + " ")) {
 					// Log.d(TAG, "Translation is contained.");
@@ -264,9 +263,9 @@ public class Sense implements Comparable<Sense> {
 	 * 
 	 * @return the main word for the sense.
 	 */
-	public String getHead() {
+	public String getPrettyHead() {
 		if (synonyms != null && synonyms.indexOf(' ') > 0) {
-			return synonyms.substring(0, synonyms.indexOf(' ')).replace(" ", ", ").replace('_', ' '); // TODO remove replaces
+			return synonyms.substring(0, synonyms.indexOf(' ')).replace(" ", ", ").replace('_', ' ');
 		}
 		else if (synonyms != null) {
 			return synonyms.replace(" ", ", ").replace('_', ' ');

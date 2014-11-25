@@ -88,7 +88,7 @@ public class Search extends ListActivity {
 			Log.d(AVBApp.TAG + "Search", "Search request: " + query);
 
 			List<Sense> ls = null;
-			// FIXME This optimization makes double call not so heavy, but it still shouldn't happen.
+			// FIXME Error#05 Double calls shouldn't happen, this optimization only makes it not so heavy.
 			if (last_results != null && last_query != null && last_query.compareTo(query) == 0) {
 				ls = last_results;
 			}

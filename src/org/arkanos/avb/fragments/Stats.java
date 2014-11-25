@@ -78,7 +78,7 @@ public class Stats extends Fragment {
 				@Override
 				public void onClick(View arg0) {
 					Intent intent = new Intent(rootView.getContext(), Trial.class);
-					intent.putExtra(Trial.LANGUAGE, l);// TODO make a constant
+					intent.putExtra(Trial.LANGUAGE, l);
 					startActivity(intent);
 				}
 			});

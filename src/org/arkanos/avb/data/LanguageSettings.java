@@ -77,7 +77,6 @@ public class LanguageSettings {
 	 * @param sql_db defines a connection to the database.
 	 */
 	public static synchronized void upgradeFrom(int version, SQLiteDatabase sql_db) {
-		// TODO Reduce the version count numbers.
 		ContentValues language = null;
 		if (version < 23) {
 			sql_db.execSQL("CREATE TABLE " + TABLE + "("
@@ -276,7 +275,7 @@ public class LanguageSettings {
 	}
 
 	/*
-	 * TODO Clean this code.
+	 * FIXME Groom#01 Clean this green code.
 	 * private static final int NOUN_CLASS = 0;
 	 * private static final int NOUN_DESCRIPTION = 1;
 	 * 

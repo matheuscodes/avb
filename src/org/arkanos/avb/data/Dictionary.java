@@ -150,7 +150,6 @@ public class Dictionary {
 	 * Wipes out the senses data.
 	 */
 	public static synchronized void clean() {
-		// TODO only remove data
 		for (String sql : Sense.purgetSQLTables()) {
 			db_write.execSQL(sql);
 		}

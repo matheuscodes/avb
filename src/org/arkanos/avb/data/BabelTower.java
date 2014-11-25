@@ -456,7 +456,7 @@ public class BabelTower {
 	 * @param language defines the language to be used.
 	 * @param amounts stores count for each unique trust.
 	 * @param trusts stores the unique trusts.
-	 * @return total of items in the histogram.
+	 * @return total of items in the histogram (area).
 	 */
 	public static synchronized int fillTranslationTrustLists(String language, List<Integer> amounts, List<Float> trusts) {
 		String sql = "SELECT COUNT(trusts) AS how_many,trusts "

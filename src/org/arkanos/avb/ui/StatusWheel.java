@@ -1,3 +1,22 @@
+/**
+ * Copyright (C) 2014 Matheus Borges Teixeira
+ * 
+ * This is a part of Arkanos Vocabulary Builder (AVB)
+ * AVB is an Android application to improve vocabulary on foreign languages.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.arkanos.avb.ui;
 
 import java.util.HashMap;
@@ -21,20 +40,42 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 
+/**
+ * Special view to draw graphics with statistics.
+ * 
+ * @version 1.0
+ * @author Matheus Borges Teixeira
+ */
 public class StatusWheel extends View {
+	/** Tag for debug outputs **/
 	private static final String TAG = AVBApp.TAG + "StatusWheel";
 
+	/** Gradient reflecting the correct knowledge distribution per language **/
 	static private HashMap<String, SweepGradient> good;
+	/** Gradient reflecting the incorrect knowledge distribution per language **/
 	static private HashMap<String, SweepGradient> bad;
+	/** Gradient reflecting the translation coverage distribution per language **/
 	static private HashMap<String, SweepGradient> coverage;
+
+	/** Summed statistics to define gradient proportions per language **/
 	static private HashMap<String, Float> amounts;
+	/** Status of the process calculating the gradients per language **/
 	static private HashMap<String, Boolean> updating;
 
+	/** Thickness reference for the disc band in points **/
 	private static final int THICKNESS = 20;
+	/** Thickness reference for the disc band in pixels **/
 	private int thickness = 0;
+	/** Diameter for the smallest disc in points **/
 	private static final int MIN_SIZE = 60;
+	/** Diameter for the smallest disc in pixels **/
 	private int min_size = 0;
 
+	/**
+	 * Constructs the view and calculates references.
+	 * 
+	 * @param c defines the application context.
+	 */
 	public StatusWheel(Context c) {
 		super(c);
 
@@ -48,6 +89,9 @@ public class StatusWheel extends View {
 		this.updateData();
 	}
 
+	/**
+	 * Starts all processes to fetch data and build gradients.
+	 */
 	private synchronized void updateData() {
 		if (updating == null) {
 			updating = new HashMap<String, Boolean>();
@@ -84,6 +128,11 @@ public class StatusWheel extends View {
 		}
 	}
 
+	/**
+	 * Reads trust, confidences and coverage building gradients for a language
+	 * 
+	 * @param language defines the language to be read.
+	 */
 	private void readData(String language) {
 		LinkedList<Integer> li;
 		LinkedList<Float> lf;
@@ -114,6 +163,16 @@ public class StatusWheel extends View {
 		Log.d(TAG, "Read unknown for " + language);
 	}
 
+	/**
+	 * Builds a color SweepGradient for painting the discs.
+	 * 
+	 * @param li defines the amount of items of a particular value.
+	 * @param lf defines the items which are unique values.
+	 * @param color specifies the desired color to the gradient.
+	 * @param correction specifies a controlling factor to generate better visual.
+	 * @param max specifies a cap for the color.
+	 * @return the gradient ready to be used for painting.
+	 */
 	private SweepGradient buildGradient(List<Integer> li, List<Float> lf, int color, float correction, float max) {
 		float[] positions = new float[lf.size() + 2];
 		int[] colors = new int[lf.size() + 2];
@@ -140,6 +199,13 @@ public class StatusWheel extends View {
 		return new SweepGradient(0f, 0f, colors, positions);
 	}
 
+	/**
+	 * Composes the shape of a simple ring.
+	 * 
+	 * @param size defines the diameter of the ring.
+	 * @param thickness defines the thickness of the rings' band.
+	 * @return the composed shape.
+	 */
 	private static PathShape buildRing(int size, int thickness) {
 		Path p = new Path();
 		p.addArc(new RectF(-size / 2, -size / 2, size / 2, size / 2), -90, 360);
@@ -152,6 +218,9 @@ public class StatusWheel extends View {
 		return rs;
 	}
 
+	/**
+	 * @see View#onDraw(Canvas)
+	 */
 	@Override
 	protected void onDraw(Canvas canvas) {
 		Paint paint = new Paint();

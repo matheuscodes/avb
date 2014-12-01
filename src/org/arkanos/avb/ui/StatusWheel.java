@@ -33,6 +33,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SweepGradient;
 import android.graphics.drawable.shapes.PathShape;
@@ -59,6 +60,10 @@ public class StatusWheel extends View {
 
 	/** Summed statistics to define gradient proportions per language **/
 	static private HashMap<String, Float> amounts;
+	/** Summed statistics of known words **/
+	static private HashMap<String, Integer> amounts_good;
+	/** Summed statistics of mistaken words **/
+	static private HashMap<String, Integer> amounts_bad;
 	/** Status of the process calculating the gradients per language **/
 	static private HashMap<String, Boolean> updating;
 
@@ -70,6 +75,15 @@ public class StatusWheel extends View {
 	private static final int MIN_SIZE = 60;
 	/** Diameter for the smallest disc in pixels **/
 	private int min_size = 0;
+
+	/** Graphics support for reading bounds **/
+	private Rect bounds = null;
+	/** Graphics support for painting **/
+	private Paint paint = null;
+	/** Graphics support to define a text arc **/
+	private RectF arc = null;
+	/** Graphics support to define a line **/
+	private Path line = null;
 
 	/**
 	 * Constructs the view and calculates references.
@@ -83,6 +97,12 @@ public class StatusWheel extends View {
 		min_size = (int) (getResources().getDisplayMetrics().density * MIN_SIZE);
 
 		int needed_size = min_size + (LanguageSettings.getInstalledLanguages().size()) * thickness * 3 + thickness;
+
+		/** Drawing helpers **/
+		bounds = new Rect();
+		paint = new Paint();
+		arc = new RectF();
+		line = new Path();
 
 		this.setMinimumHeight(needed_size);
 		this.setMinimumWidth(needed_size);
@@ -98,6 +118,12 @@ public class StatusWheel extends View {
 		}
 		if (amounts == null) {
 			amounts = new HashMap<String, Float>();
+		}
+		if (amounts_good == null) {
+			amounts_good = new HashMap<String, Integer>();
+		}
+		if (amounts_bad == null) {
+			amounts_bad = new HashMap<String, Integer>();
 		}
 		if (coverage == null) {
 			coverage = new HashMap<String, SweepGradient>();
@@ -150,6 +176,10 @@ public class StatusWheel extends View {
 		li = new LinkedList<Integer>();
 		lf = new LinkedList<Float>();
 		BabelTower.fillTranslationKnownLists(language, li, lf);
+		int a_good = 0;
+		for (Integer i : li) {
+			a_good += i;
+		}
 		good.remove(language);
 		good.put(language, buildGradient(li, lf, 0xFF00FF00, 0.5f, amounts.get(language)));
 		Log.d(TAG, "Read known for " + language);
@@ -158,9 +188,16 @@ public class StatusWheel extends View {
 		li = new LinkedList<Integer>();
 		lf = new LinkedList<Float>();
 		BabelTower.fillTranslationUnknownLists(language, li, lf);
+		int a_bad = 0;
+		for (Integer i : li) {
+			a_bad += i;
+		}
 		bad.remove(language);
 		bad.put(language, buildGradient(li, lf, 0xFFFF0000, 0.5f, amounts.get(language)));
 		Log.d(TAG, "Read unknown for " + language);
+
+		amounts_good.put(language, a_good);
+		amounts_bad.put(language, a_bad);
 	}
 
 	/**
@@ -223,11 +260,12 @@ public class StatusWheel extends View {
 	 */
 	@Override
 	protected void onDraw(Canvas canvas) {
-		Paint paint = new Paint();
+		paint.reset();
 
 		canvas.save();
 		canvas.rotate(90);
-		canvas.translate(canvas.getClipBounds().exactCenterX(), canvas.getClipBounds().exactCenterY());
+		canvas.getClipBounds(bounds);
+		canvas.translate(bounds.exactCenterX(), bounds.exactCenterY());
 
 		int size = min_size + 2 * thickness;
 		for (String l : LanguageSettings.getInstalledLanguages()) {
@@ -250,9 +288,17 @@ public class StatusWheel extends View {
 			paint.setFlags(Paint.ANTI_ALIAS_FLAG);
 			paint.setColor(getResources().getColor(R.color.stats_text));
 			paint.setTextSize(thickness / 2);
-			Path line = new Path();
-			line.addArc(new RectF(-size / 2 - thickness / 2, -size / 2 - thickness / 2, size / 2 + thickness / 2, size / 2 + thickness / 2), 0, -90);
-			canvas.drawTextOnPath(LanguageSettings.prettyName(l, this.getContext()), line, 0, 0, paint);
+			line.reset();
+			arc.set(-size / 2 - thickness / 2, -size / 2 - thickness / 2, size / 2 + thickness / 2, size / 2 + thickness / 2);
+			line.addArc(arc, 0, -90);
+			String text = LanguageSettings.prettyName(l, this.getContext());
+			if (amounts_good.get(l) != null) {
+				text += " / " + amounts_good.get(l) + " +";
+			}
+			if (amounts_bad.get(l) != null) {
+				text += " / " + amounts_bad.get(l) + " -";
+			}
+			canvas.drawTextOnPath(text, line, 0, 0, paint);
 
 			paint.reset();
 

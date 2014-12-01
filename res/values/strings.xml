@@ -2,9 +2,9 @@
 <resources>
 
     <string name="app_name">Arkanos Vocabulary Builder</string>
-    <string name="app_name_short">Vocabulary Builder</string>
+    <string name="app_name_short">AVB</string>
     <!-- v [milestone].[incremental_version].[wordnet_Version] -->
-    <string name="app_version">v0.0.3</string>
+    <string name="app_version">v1.0.3</string>
     
     <!-- Too Generic -->
     <string name="yes">Yes</string>

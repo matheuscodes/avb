@@ -198,9 +198,9 @@ public class Translation {
 	public void cleanSynonyms(String query) {
 		// TODO Feature#02 Break query in terms (make_out, make, out).
 		String newsynonyms = "";
-		String query_right = query.replace(' ', '_').toLowerCase(Locale.getDefault());
+		String query_right = query.replace(' ', '_').toLowerCase(Locale.ENGLISH);
 		for (String s : breakToTerms(synonyms)) {
-			if (s.toLowerCase(Locale.getDefault()).contains(query_right)) {
+			if (s.toLowerCase(Locale.ENGLISH).contains(query_right)) {
 				newsynonyms += s + " ";
 			}
 		}

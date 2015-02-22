@@ -10,6 +10,8 @@ Copyright (C) 2014 Matheus Borges Teixeira
 
 Arkanos Vocabulary Builder is an Android application for browsing, training and improving vocabulary in foreign languages. It is build on top of WorNet 3.0 and uses an external translation database to compile a fuzzy network of translations with semantics, not only single worded translations.
 
+**License:** GPLv3.
+
 _WordNet is a lexical database for English from Princeton. See more at http://wordnet.princeton.edu/_
 
 _WordNet 3.0 Copyright 2006 by Princeton University. All rights reserved._
@@ -22,11 +24,14 @@ This application is designed to deliver offline language installation data, but 
 
 # Feature Overview
 
-Individually installable languages | Basic overview on statistics | Search for terms
-:-: | :-: | :-: 
- <img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/install.png" width=256px /> | <img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/stats.png" width=256px/> | <img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/search.png" width=256px />
+Individually installable languages | Basic overview on statistics
+:-: | :-: 
+ <img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/install.png" width=256px /> | <img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/stats.png" width=256px/> 
 
+Search for terms | Search for translations 
+:-: | :-:
+<img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/search.png" width=256px /> | <img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/translation.png" width=256px />
  
-Search for translations | Change and add translations | Test your knowledge
-:-: | :-: | :-: 
- <img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/translation.png" width=256px /> | <img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/change.png" width=256px/> | <img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/test.png" width=256px /> 
+Change and add translations | Test your knowledge
+:-: | :-: 
+<img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/change.png" width=256px/> | <img src="https://raw.githubusercontent.com/matheuscodes/avb/master/assets/docs/test.png" width=256px /> 
